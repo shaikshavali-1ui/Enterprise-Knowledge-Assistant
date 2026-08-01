@@ -275,7 +275,7 @@ export default function DocumentManager({ documents, vectorStats, onRefreshDocs,
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <FileText className="w-5 h-5 text-indigo-400" />
-            <span>Nexus Knowledge Base & Vector Index</span>
+            <span>Enterprise Knowledge Base & Vector Index</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Manage organizational manuals, policies, and confidential reports indexed in Pinecone / Embedded Vector Store.

@@ -395,12 +395,12 @@ export default function LandingPage({ onLoginSuccess }) {
       {/* Feature Grid Section */}
       <section id="features" className="py-20 max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider">WHY NEXUS KNOWLEDGE HUB?</p>
+          <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider">WHY ENTERPRISE KNOWLEDGE ASSISTANT?</p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
             One Platform. Unlimited Knowledge.
           </h2>
           <p className="text-slate-400 text-sm sm:text-base">
-            Nexus Knowledge Hub empowers your organization with AI-driven search, secure access, and automated communication.
+            Enterprise Knowledge Assistant empowers your organization with AI-driven search, secure access, and automated communication.
           </p>
         </div>
 
@@ -610,7 +610,7 @@ export default function LandingPage({ onLoginSuccess }) {
             Ready to Transform Your Organization?
           </h2>
           <p className="text-slate-200 text-base max-w-2xl mx-auto relative z-10">
-            Join thousands of teams using <strong className="text-white">Nexus Knowledge Hub</strong> to boost productivity, streamline search, and automate internal communication.
+            Join thousands of teams using <strong className="text-white">Enterprise Knowledge Assistant</strong> to boost productivity, streamline search, and automate internal communication.
           </p>
           <div className="flex flex-wrap justify-center items-center gap-4 pt-2 relative z-10">
             <button
@@ -641,7 +641,7 @@ export default function LandingPage({ onLoginSuccess }) {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Company Identity Verification</h3>
-                <p className="text-xs text-slate-400">Nexus Knowledge Hub Security Guard</p>
+                <p className="text-xs text-slate-400">Enterprise Knowledge Assistant Security Guard</p>
               </div>
             </div>
 
@@ -730,20 +730,20 @@ export default function LandingPage({ onLoginSuccess }) {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center space-x-3">
             <div>
-              <span className="font-bold text-white text-sm">NEXUS KNOWLEDGE HUB</span>
+              <span className="font-bold text-white text-sm">ENTERPRISE KNOWLEDGE ASSISTANT</span>
               <p className="text-[11px] text-slate-500">AI-Powered Enterprise Knowledge Assistant & Email Automation</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center space-x-6 text-slate-400">
-            <a href="#meaning" className="hover:text-white transition-colors">About Nexus</a>
+            <a href="#meaning" className="hover:text-white transition-colors">About Platform</a>
             <a href="#security" className="hover:text-white transition-colors">Security</a>
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
           </div>
 
           <div className="text-slate-500 font-mono text-[11px]">
-            © 2026 Nexus Knowledge Hub. All rights reserved.
+            © 2026 Enterprise Knowledge Assistant. All rights reserved.
           </div>
         </div>
       </footer>

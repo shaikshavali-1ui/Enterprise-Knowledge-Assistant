@@ -217,7 +217,7 @@ export default function ChatInterface({ activeUser, presetQuery, setPresetQuery,
                 : 'bg-slate-900/80 border border-slate-800 text-slate-200 rounded-tl-none'
             }`}>
               <div className="flex items-center justify-between text-[10px] opacity-70 mb-1">
-                <span className="font-bold uppercase tracking-wider">{msg.sender === 'user' ? userName : 'Nexus AI Assistant'}</span>
+                <span className="font-bold uppercase tracking-wider">{msg.sender === 'user' ? userName : 'Enterprise AI Assistant'}</span>
                 <span>{msg.timestamp}</span>
               </div>
 

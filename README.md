@@ -1,11 +1,11 @@
-# 🌐 Nexus Knowledge Hub — Enterprise RAG & Automated Knowledge System
+# 🌐 Enterprise knowledge assistant— Enterprise RAG & Automated Knowledge System
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20TailwindCSS-blueviolet)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-brightgreen)
 ![RAG Engine](https://img.shields.io/badge/AI-RAG%20Vector%20Store-orange)
 
-An **Enterprise-Grade Knowledge Management and AI Retrieval-Augmented Generation (RAG) Platform**. **Nexus Knowledge Hub** empowers organizations to securely upload internal documents, perform context-aware AI query answering with exact source citations, automate communication workflows, and enforce strict Role-Based Access Control (RBAC).
+An **Enterprise-Grade Knowledge Management and AI Retrieval-Augmented Generation (RAG) Platform**. **Enterprise Knowledge Assistant** empowers organizations to securely upload internal documents, perform context-aware AI query answering with exact source citations, automate communication workflows, and enforce strict Role-Based Access Control (RBAC).
 
 ---
 

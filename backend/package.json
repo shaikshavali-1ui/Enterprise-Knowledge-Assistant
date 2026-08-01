@@ -1,7 +1,7 @@
 {
-  "name": "nexus-knowledge-hub-backend",
+  "name": "enterprise-knowledge-assistant-backend",
   "version": "1.0.0",
-  "description": "Backend API for Nexus Knowledge Hub with RAG and Email Automation",
+  "description": "Backend API for Enterprise Knowledge Assistant with RAG and Email Automation",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

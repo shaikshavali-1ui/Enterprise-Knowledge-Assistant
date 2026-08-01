@@ -511,7 +511,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
             {/* Email Box Mockup */}
             <div className="rounded-xl border border-slate-700 bg-white text-slate-900 overflow-hidden text-xs shadow-xl">
               <div className="bg-indigo-600 p-4 text-center text-white">
-                <h4 className="font-bold text-base">Nexus Knowledge Hub</h4>
+                <h4 className="font-bold text-base">Enterprise Knowledge Assistant</h4>
                 <p className="text-[11px] text-indigo-200">Automated HR / Policy Notification</p>
               </div>
 
@@ -536,7 +536,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
                 )}
 
                 <div className="pt-3 mt-4 border-t border-slate-200 text-[10px] text-slate-400 text-center">
-                  This email was dispatched via Nexus Knowledge Hub SMTP Gateway.
+                  This email was dispatched via Enterprise Knowledge Assistant SMTP Gateway.
                 </div>
               </div>
             </div>
@@ -846,14 +846,14 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
               </span>
               <div className="rounded-xl border border-slate-700 bg-white text-slate-900 overflow-hidden text-xs shadow-xl">
                 <div className="bg-indigo-600 p-3.5 text-center text-white">
-                  <h4 className="font-bold text-sm">Nexus Knowledge Hub</h4>
+                  <h4 className="font-bold text-sm">Enterprise Knowledge Assistant</h4>
                   <p className="text-[10px] text-indigo-200">Automated HR Management Approval Notification</p>
                 </div>
                 <div className="p-4 space-y-2.5 leading-relaxed">
                   <h5 className="font-bold text-xs text-slate-900">APPROVED: {selectedRequestForReview.requestType} - HR Reference #{selectedRequestForReview.id}</h5>
                   <p className="text-slate-700">Your request for "{selectedRequestForReview.requestType}" submitted on {selectedRequestForReview.dateSubmitted} has been formally APPROVED by HR Management.</p>
                   <div className="pt-2 text-[10px] text-slate-400 border-t border-slate-200 text-center">
-                    Dispatched via Nexus Knowledge Hub SMTP Gateway • Approver: {activeUser?.name || 'Elena Rostova (HR Lead)'}
+                    Dispatched via Enterprise Knowledge Assistant SMTP Gateway • Approver: {activeUser?.name || 'Elena Rostova (HR Lead)'}
                   </div>
                 </div>
               </div>

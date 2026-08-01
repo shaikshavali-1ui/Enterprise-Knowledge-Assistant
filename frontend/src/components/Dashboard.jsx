@@ -32,7 +32,7 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
         <div>
           <div className="flex items-center space-x-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Nexus Knowledge Hub
+              Enterprise Knowledge Assistant
             </span>
             <span className="text-xs text-slate-400">• Security Filter: Active</span>
           </div>

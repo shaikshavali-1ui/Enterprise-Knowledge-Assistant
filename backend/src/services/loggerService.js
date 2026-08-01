@@ -13,7 +13,7 @@ class LoggerService {
         userId: 'usr_admin',
         userName: 'Sarah Connor',
         userRole: 'Admin',
-        details: 'Nexus Knowledge Hub backend initialized with Pinecone vector index adapter and Nodemailer SMTP engine.',
+        details: 'Enterprise Knowledge Assistant backend initialized with Pinecone vector index adapter and Nodemailer SMTP engine.',
         timestamp: new Date(Date.now() - 3600000 * 2).toISOString()
       },
       {

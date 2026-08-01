@@ -78,7 +78,7 @@ Maternity leave is granted up to 16 fully paid weeks. Paternity / Secondary Care
 - 11:30 AM: Enterprise Security Briefing & NDA Verification.
 
 SECTION 2: AUTOMATED WELCOME EMAIL & SETUP PROTOCOL
-Upon completion of HR documentation, HR admins trigger the Automated Onboarding Email Sequence via Nexus Knowledge Hub.
+Upon completion of HR documentation, HR admins trigger the Automated Onboarding Email Sequence via Enterprise Knowledge Assistant.
 The email includes:
 - Corporate email credentials & Slack workspace invitation link.
 - Assigned mentor contact information.
