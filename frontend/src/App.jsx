@@ -10,9 +10,52 @@ import AuditLogs from './components/AuditLogs';
 import LandingPage from './components/LandingPage';
 
 export default function App() {
+  const initialDefaultUsers = [
+    {
+      id: 'usr_admin',
+      email: 'admin@enterprise.com',
+      name: 'Sarah Connor (System Admin)',
+      role: 'Admin',
+      department: 'Executive Management',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_hr',
+      email: 'hr.manager@enterprise.com',
+      name: 'Elena Rostova (HR Lead)',
+      role: 'HR Manager',
+      department: 'Human Resources',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_finance',
+      email: 'finance.lead@enterprise.com',
+      name: 'Marcus Vance (Finance Director)',
+      role: 'Finance',
+      department: 'Finance & Payroll',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_employee',
+      email: 'dev.john@enterprise.com',
+      name: 'John Doe (Software Engineer)',
+      role: 'Employee',
+      department: 'Engineering',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_shavali',
+      email: 'shavali@enterprise.com',
+      name: 'Shavali (Software Engineer)',
+      role: 'Employee',
+      department: 'Engineering Division',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+    }
+  ];
+
   const [currentTab, setCurrentTab] = useState('landing');
-  const [users, setUsers] = useState([]);
-  const [activeUser, setActiveUser] = useState(null);
+  const [users, setUsers] = useState(initialDefaultUsers);
+  const [activeUser, setActiveUser] = useState(initialDefaultUsers[3]);
   const [documents, setDocuments] = useState([]);
   const [vectorStats, setVectorStats] = useState(null);
   const [emailLogs, setEmailLogs] = useState([]);
@@ -33,13 +76,16 @@ export default function App() {
     fetchAuditLogs();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (newEmp = null) => {
+    if (newEmp) {
+      setUsers(prev => [newEmp, ...prev]);
+      return;
+    }
     try {
       const res = await fetch('/api/auth/users');
       const data = await res.json();
       if (data.success) {
         setUsers(data.users);
-        setActiveUser(data.users[3]); // Default to John Doe (Software Engineer / Employee)
       }
     } catch (err) {
       console.error('Error fetching users:', err);
