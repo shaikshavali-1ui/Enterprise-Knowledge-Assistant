@@ -11,14 +11,16 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
+  const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin';
+
   const navItems = [
-    { id: 'landing', label: 'Landing Page', icon: Home, badge: 'Nexus' },
+    { id: 'landing', label: 'Landing Page', icon: Home, badge: 'Home' },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
     { id: 'chat', label: 'Knowledge Chat (RAG)', icon: MessageSquare, badge: 'AI' },
     { id: 'documents', label: 'Document Base', icon: FileText, badge: 'Vector' },
     { id: 'email', label: 'Email Automation', icon: Mail, badge: 'SMTP' },
     { id: 'rbac', label: 'RBAC Simulator', icon: ShieldAlert, badge: activeUser?.role },
-    { id: 'logs', label: 'Audit & Logs', icon: Clock, badge: null },
+    { id: 'logs', label: 'Audit & Logs', icon: Clock, badge: isHrOrAdmin ? 'Admin & HR' : '🔒 Restricted' },
   ];
 
   return (
@@ -26,10 +28,9 @@ export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
       <div className="space-y-6">
         {/* Brand Header */}
         <div className="flex items-center space-x-2.5 px-3 py-1 border-b border-slate-800/60 pb-3">
-          <img src="/nexus-logo.png" alt="Nexus Logo" className="w-9 h-9 object-contain rounded-xl border border-indigo-500/30 bg-slate-950 p-0.5" />
           <div>
-            <span className="font-bold text-sm text-white tracking-wider block">NEXUS</span>
-            <span className="text-[9px] block text-indigo-400 font-semibold tracking-widest uppercase -mt-1">KNOWLEDGE HUB</span>
+            <span className="font-bold text-xs text-white tracking-wider block uppercase">ENTERPRISE KNOWLEDGE</span>
+            <span className="text-[9px] block text-indigo-400 font-semibold tracking-widest uppercase -mt-0.5">ASSISTANT</span>
           </div>
         </div>
 
@@ -83,10 +84,7 @@ export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
 
       {/* Footer Info */}
       <div className="pt-4 border-t border-slate-800/80 text-center flex flex-col items-center space-y-1">
-        <div className="flex items-center justify-center space-x-1.5">
-          <img src="/nexus-logo.png" alt="Nexus Logo" className="w-4 h-4 object-contain" />
-          <p className="text-[11px] text-slate-300 font-bold">Nexus Knowledge Hub</p>
-        </div>
+        <p className="text-[11px] text-slate-300 font-bold">Enterprise Knowledge Assistant</p>
         <p className="text-[10px] font-mono text-slate-600">Pinecone • OpenAI • Nodemailer</p>
       </div>
     </aside>

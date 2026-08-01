@@ -206,6 +206,7 @@ export default function App() {
             <AuditLogs
               conversationLogs={conversationLogs}
               auditLogs={auditLogs}
+              activeUser={activeUser}
             />
           )}
         </main>

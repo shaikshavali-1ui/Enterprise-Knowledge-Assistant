@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'Nexus Knowledge Hub API',
+    service: 'Enterprise Knowledge Assistant API',
     version: '1.0.0',
     timestamp: new Date().toISOString()
   });
@@ -34,7 +34,7 @@ app.use('/api/logs', logRoutes);
 // Start Express Server
 app.listen(config.port, () => {
   console.log(`=======================================================`);
-  console.log(`🚀 Nexus Knowledge Hub Backend Running`);
+  console.log(`🚀 Enterprise Knowledge Assistant Backend Running`);
   console.log(`📡 Server Port: http://localhost:${config.port}`);
   console.log(`🔒 Security RBAC Engine: Active`);
   console.log(`🌲 Pinecone / Vector Index Engine: Active`);

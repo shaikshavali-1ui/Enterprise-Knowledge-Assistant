@@ -17,17 +17,12 @@ export default function Navbar({ activeUser, vectorStats, onSelectTab }) {
 
   return (
     <header className="h-16 border-b border-slate-800/80 glass-panel sticky top-0 z-40 px-6 flex items-center justify-between">
-      {/* Brand & Logo */}
+      {/* Brand */}
       <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectTab && onSelectTab('landing')}>
-        <img 
-          src="/nexus-logo.png" 
-          alt="Nexus Knowledge Hub Logo" 
-          className="w-10 h-10 object-contain rounded-xl shadow-glow-indigo border border-indigo-500/40 bg-slate-950 p-0.5" 
-        />
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="font-bold text-lg bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
-              Nexus Knowledge Hub
+              Enterprise Knowledge Assistant
             </h1>
             <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               v1.0 RAG

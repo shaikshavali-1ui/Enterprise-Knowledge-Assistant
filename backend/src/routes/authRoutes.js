@@ -58,7 +58,7 @@ router.post('/login', (req, res) => {
 
     return res.status(401).json({
       success: false,
-      message: `Access Denied: '${attemptedEmail}' is not recognized in the Nexus Knowledge Hub corporate directory. Only verified organization employees can log in.`
+      message: `Access Denied: '${attemptedEmail}' is not recognized in the Enterprise Knowledge Assistant corporate directory. Only verified organization employees can log in.`
     });
   }
 

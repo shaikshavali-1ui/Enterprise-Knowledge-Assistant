@@ -50,4 +50,30 @@ router.get('/stats', (req, res) => {
   res.json({ success: true, stats: vectorStore.getStats() });
 });
 
+// Delete document (Admin & HR Only)
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  const { requesterRole, userName } = req.query;
+
+  if (requesterRole === 'Employee' || (requesterRole && requesterRole !== 'Admin' && requesterRole !== 'HR Manager')) {
+    loggerService.logAudit('SECURITY_ALERT', { name: userName || 'User', role: requesterRole }, `Access Denied: Attempted document deletion without Admin/HR clearance.`);
+    return res.status(403).json({
+      success: false,
+      message: 'Access Denied: Only Admin and HR Lead personnel are authorized to remove documents from the vector database.'
+    });
+  }
+
+  const removedDoc = vectorStore.deleteDocument(id);
+  if (removedDoc) {
+    loggerService.logAudit('DOCUMENT_DELETED', { name: userName || 'Admin', role: requesterRole || 'Admin' }, `Deleted document "${removedDoc.title}" from vector store.`);
+    return res.json({
+      success: true,
+      message: `Document "${removedDoc.title}" removed successfully from knowledge base.`,
+      stats: vectorStore.getStats()
+    });
+  } else {
+    return res.status(404).json({ success: false, message: 'Document not found.' });
+  }
+});
+
 export default router;

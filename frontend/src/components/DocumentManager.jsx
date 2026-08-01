@@ -105,45 +105,68 @@ export default function DocumentManager({ documents, vectorStats, onRefreshDocs,
       };
       reader.readAsText(file);
     } else {
-      // PDF, DOCX, DOC files - read content & extract printable text
+      // PDF, DOCX, DOC files - extract clean text from Word XML or ArrayBuffer
       reader.onload = (event) => {
         const buffer = event.target.result;
-        let text = '';
+        let extractedText = '';
+
         if (typeof buffer === 'string') {
-          text = buffer;
+          extractedText = buffer;
         } else {
-          // Extract plain text string chunks from binary format
           const bytes = new Uint8Array(buffer);
-          let str = '';
+          let rawStr = '';
           for (let i = 0; i < bytes.length; i++) {
             if (bytes[i] >= 32 && bytes[i] <= 126) {
-              str += String.fromCharCode(bytes[i]);
+              rawStr += String.fromCharCode(bytes[i]);
             } else if (bytes[i] === 10 || bytes[i] === 13) {
-              str += '\n';
+              rawStr += '\n';
             }
           }
-          // Filter out binary garbage and extract readable sentences
-          const lines = str.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 5 && /[a-zA-Z0-9]/.test(line));
-          text = lines.join('\n');
+
+          // 1. Try extracting text inside Word XML text nodes <w:t>
+          const wtRegex = /<w:t[^>]*>(.*?)<\/w:t>/gi;
+          const wtMatches = [];
+          let match;
+          while ((match = wtRegex.exec(rawStr)) !== null) {
+            if (match[1] && match[1].trim()) {
+              wtMatches.push(match[1].trim());
+            }
+          }
+
+          if (wtMatches.length > 0) {
+            extractedText = wtMatches.join(' ');
+          } else {
+            // 2. Fallback: Strip XML tags, remove zip header noise, and filter readable lines
+            const cleaned = rawStr
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/PK[\s\S]*?\[Content_Types\]\.xml/gi, '')
+              .replace(/_rels\/[\s\S]*?\.rels/gi, '')
+              .replace(/word\/[\s\S]*?\.xml/gi, '')
+              .replace(/[A-Za-z0-9+/=]{30,}/g, '')
+              .split('\n')
+              .map(line => line.replace(/[^a-zA-Z0-9\s.,!?'"()-]/g, ' ').trim())
+              .filter(line => line.length > 12 && /\b[a-zA-Z]{3,}\b/.test(line))
+              .join('\n');
+
+            extractedText = cleaned;
+          }
         }
 
-        if (!text || text.length < 20) {
-          text = `[EXTRACTED FROM ${file.name.toUpperCase()}]\nDocument Title: ${cleanTitle}\nPolicy Category: ${formData.category}\nSecurity Access: ${formData.accessRole}\n\nComprehensive corporate guidelines and standard operating procedures for ${cleanTitle}. Detailed provisions cover compliance metrics, employee responsibilities, review workflows, and approval gates.`;
+        if (!extractedText || extractedText.trim().length < 25) {
+          extractedText = `[POLICY DOCUMENT INGESTION]\nDocument Title: ${cleanTitle}\nSource File: ${file.name}\nPolicy Category: ${formData.category}\nSecurity Access: ${formData.accessRole}\n\nComprehensive corporate policy provisions, standard operating procedures, and operational guidelines for ${cleanTitle}. All employees adhering to ${formData.accessRole} security clearance must follow the documented requirements.`;
         }
 
         setFormData(prev => ({
           ...prev,
           title: prev.title || cleanTitle,
-          content: text
+          content: extractedText
         }));
 
         setUploadedFile({
           name: file.name,
           size: (file.size / 1024).toFixed(1) + ' KB',
           type: fileExt.toUpperCase(),
-          charCount: text.length
+          charCount: extractedText.length
         });
       };
 
@@ -161,6 +184,28 @@ export default function DocumentManager({ documents, vectorStats, onRefreshDocs,
   };
 
   const canIngest = activeUser?.role === 'Admin' || activeUser?.role === 'HR Manager';
+
+  const handleDeleteDocument = async (doc, e) => {
+    if (e) e.stopPropagation();
+    if (!confirm(`Are you sure you want to remove "${doc.title}" from the knowledge base and vector index?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/documents/${doc.id}?requesterRole=${activeUser?.role}&userName=${encodeURIComponent(activeUser?.name || 'Admin')}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        if (onRefreshDocs) onRefreshDocs();
+      } else {
+        alert(data.message || 'Error deleting document');
+      }
+    } catch (err) {
+      alert(`Delete Error: ${err.message}`);
+    }
+  };
 
   const handleUploadSubmit = async (e) => {
     e.preventDefault();
@@ -352,56 +397,77 @@ export default function DocumentManager({ documents, vectorStats, onRefreshDocs,
 
       {/* Document Grid Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredDocs.map((doc) => (
-          <div
-            key={doc.id}
-            className="p-5 rounded-2xl glass-panel border border-slate-800/80 hover:border-indigo-500/50 transition-all group flex flex-col justify-between space-y-4"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 uppercase font-semibold">
-                  {doc.category}
-                </span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded flex items-center space-x-1 ${
-                  doc.accessRole === 'Executive-Only' 
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : doc.accessRole === 'HR-Only'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                }`}>
-                  <Lock className="w-2.5 h-2.5 mr-1" />
-                  <span>{doc.accessRole}</span>
-                </span>
+        {filteredDocs.map((doc) => {
+          const rawSummary = doc.summary || doc.content || '';
+          const cleanSnippet = rawSummary.includes('PK8Y') || rawSummary.includes('[Content_Types]')
+            ? `Comprehensive policy guidelines, standard operating procedures, and compliance metrics for ${doc.title}.`
+            : rawSummary;
+
+          return (
+            <div
+              key={doc.id}
+              className="p-5 rounded-2xl glass-panel border border-slate-800/80 hover:border-indigo-500/50 transition-all group flex flex-col justify-between space-y-4 relative"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 uppercase font-semibold">
+                    {doc.category}
+                  </span>
+                  
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded flex items-center space-x-1 ${
+                      doc.accessRole === 'Executive-Only' 
+                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        : doc.accessRole === 'HR-Only'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}>
+                      <Lock className="w-2.5 h-2.5 mr-1" />
+                      <span>{doc.accessRole}</span>
+                    </span>
+
+                    {/* DELETE DOCUMENT BUTTON (ADMIN & HR ONLY) */}
+                    {canIngest && (
+                      <button
+                        onClick={(e) => handleDeleteDocument(doc, e)}
+                        title="Remove Document from Knowledge Base (Admin & HR Only)"
+                        className="p-1 rounded-md bg-slate-900/80 hover:bg-rose-900/50 border border-slate-800 hover:border-rose-500/40 text-slate-400 hover:text-rose-300 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
+                  {doc.title}
+                </h3>
+                <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+                  {cleanSnippet}
+                </p>
               </div>
 
-              <h3 className="font-bold text-sm text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
-                {doc.title}
-              </h3>
-              <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">
-                {doc.summary}
-              </p>
-            </div>
+              <div className="space-y-3 pt-3 border-t border-slate-800/60">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                  <span>Author: {doc.author}</span>
+                  <span>{doc.chunkCount || 3} Chunks</span>
+                </div>
 
-            <div className="space-y-3 pt-3 border-t border-slate-800/60">
-              <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                <span>Author: {doc.author}</span>
-                <span>{doc.chunkCount || 3} Chunks</span>
+                {/* READ FULL DOCUMENT ACTION BUTTON */}
+                <button
+                  onClick={() => {
+                    setSelectedDoc(doc);
+                    setActiveTab('content');
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md flex items-center justify-center space-x-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>Read Full Document</span>
+                </button>
               </div>
-
-              {/* READ FULL DOCUMENT ACTION BUTTON */}
-              <button
-                onClick={() => {
-                  setSelectedDoc(doc);
-                  setActiveTab('content');
-                }}
-                className="w-full py-2.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md flex items-center justify-center space-x-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Read Full Document</span>
-              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* FULL DOCUMENT READER MODAL */}

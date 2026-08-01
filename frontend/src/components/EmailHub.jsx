@@ -23,14 +23,14 @@ import {
 export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDraftPreset }) {
   const [recipient, setRecipient] = useState('shavali@enterprise.com');
   const [subject, setSubject] = useState('Annual Leave Request - Pending HR Review (Ref HR-2026-88)');
-  const [senderName, setSenderName] = useState('shavali (Software Engineer)');
+  const [senderName, setSenderName] = useState(activeUser?.name || 'Enterprise Employee');
   const [templateType, setTemplateType] = useState('LEAVE_REQUEST');
   const [bodyText, setBodyText] = useState(
     'I am submitting a formal request for annual leave from August 10, 2026 to August 17, 2026. Please review and approve.'
   );
 
   const [variables, setVariables] = useState({
-    employeeName: activeUser?.name || 'shavali',
+    employeeName: activeUser?.name || 'Employee',
     leaveType: 'Annual Vacation',
     startDate: '2026-08-10',
     endDate: '2026-08-17',
@@ -47,14 +47,14 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
   const [pendingRequests, setPendingRequests] = useState([
     {
       id: 'req_101',
-      employeeName: 'shavali',
+      employeeName: 'Shavali',
       employeeEmail: 'shavali@enterprise.com',
       department: 'Engineering Division',
       requestType: 'Annual Vacation (Aug 10 - Aug 17, 2026)',
       policyRef: 'HR-2026-88 (Annual Leave & PTO Policy)',
-      fullDetails: 'Employee shavali has requested 8 working days of annual vacation leave from August 10 to August 17, 2026. Coverage has been arranged with team lead. Project deliverables are scheduled ahead of departure.',
+      fullDetails: 'Employee Shavali has requested 8 working days of annual vacation leave from August 10 to August 17, 2026. Coverage has been arranged with team lead. Project deliverables are scheduled ahead of departure.',
       variables: {
-        employeeName: 'shavali',
+        employeeName: 'Shavali',
         leaveType: 'Annual Vacation',
         startDate: '2026-08-10',
         endDate: '2026-08-17',
@@ -83,17 +83,51 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
     }
   ]);
 
-  // Sync variables when activeUser changes
+  // Sync variables and sender display name when activeUser changes
   useEffect(() => {
+    if (activeUser?.name) {
+      setSenderName(activeUser.name);
+    }
     setVariables(prev => ({
       ...prev,
-      employeeName: activeUser?.name || 'shavali',
+      employeeName: activeUser?.name || 'Employee',
       approverName: activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin' ? activeUser?.name : 'Elena Rostova (HR Lead)'
     }));
-    if (activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin') {
-      setSenderName(activeUser?.name || 'Elena Rostova (HR Lead)');
-    }
   }, [activeUser]);
+
+  // State for RBAC Access Denied Modal
+  const [rbacDeniedModal, setRbacDeniedModal] = useState(null);
+
+  // RBAC Permission Rules for Email Templates (Matching Corporate Policy)
+  const TEMPLATE_RBAC = {
+    LEAVE_REQUEST: {
+      name: 'Leave Request',
+      allowedRoles: ['Employee', 'HR Manager', 'Admin', 'Finance'],
+      senderRoleLabel: 'Employee or HR',
+      targetAudience: 'HR Manager / Department Lead',
+      primaryGoal: 'Request or approve PTO/leave time',
+      keyVariables: 'Dates, Leave Type, Approver',
+      badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+    },
+    ONBOARDING_WELCOME: {
+      name: 'Onboarding Welcome',
+      allowedRoles: ['HR Manager', 'Admin'],
+      senderRoleLabel: 'HR / Hiring Manager',
+      targetAudience: 'Individual New Hire',
+      primaryGoal: 'Welcome & onboard new employee',
+      keyVariables: 'Role, Mentor, Start Date, Stipend',
+      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+    },
+    POLICY_NOTICE: {
+      name: 'Policy Notice',
+      allowedRoles: ['HR Manager', 'Admin'],
+      senderRoleLabel: 'HR / System Admin / Security',
+      targetAudience: 'All Company Staff (all-staff@...)',
+      primaryGoal: 'Announce policy/security updates',
+      keyVariables: 'Policy Title, Effective Date, Link',
+      badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+    }
+  };
 
   // Apply draft preset passed from RAG query action trigger
   useEffect(() => {
@@ -105,14 +139,38 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
     }
   }, [emailDraftPreset]);
 
+  const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin';
+
+  const checkRbacPermission = (type) => {
+    const rule = TEMPLATE_RBAC[type];
+    if (!rule) return true;
+    const userRole = activeUser?.role || 'Employee';
+    return rule.allowedRoles.includes(userRole);
+  };
+
   const handleTemplateChange = (type) => {
+    const rule = TEMPLATE_RBAC[type];
+    
+    // RBAC Security Check
+    if (!checkRbacPermission(type)) {
+      setRbacDeniedModal({
+        templateType: type,
+        templateName: rule.name,
+        requiredRoles: rule.allowedRoles,
+        senderRoleLabel: rule.senderRoleLabel,
+        currentUserRole: activeUser?.role || 'Employee',
+        currentUserName: activeUser?.name || 'Current User'
+      });
+      return;
+    }
+
     setTemplateType(type);
     if (type === 'LEAVE_REQUEST') {
       setSubject('Annual Leave Request - Pending HR Review (Ref HR-2026-88)');
       setRecipient('hr.manager@enterprise.com');
       setBodyText('I am submitting a formal request for annual leave from August 10, 2026 to August 17, 2026. Please review and approve.');
       setVariables({
-        employeeName: activeUser?.name || 'shavali',
+        employeeName: activeUser?.name || 'Employee',
         leaveType: 'Annual Vacation',
         startDate: '2026-08-10',
         endDate: '2026-08-17',
@@ -159,7 +217,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
     setLastSentLog(null);
 
     try {
-      // 1. Dispatch email via API
+      // 1. Dispatch email via API with RBAC role check
       const res = await fetch('/api/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,7 +227,8 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
           type: templateType,
           body: `Your request for "${req.requestType}" submitted on ${req.dateSubmitted} has been formally APPROVED by HR Management.`,
           variables: req.variables || variables,
-          senderName: activeUser?.name || 'Elena Rostova (HR Lead)'
+          senderName: activeUser?.name || 'Elena Rostova (HR Lead)',
+          userRole: activeUser?.role || 'Employee'
         })
       });
 
@@ -195,6 +254,19 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
     e.preventDefault();
     if (!recipient || !subject) return;
 
+    // RBAC check before sending
+    if (!checkRbacPermission(templateType)) {
+      setRbacDeniedModal({
+        templateType,
+        templateName: TEMPLATE_RBAC[templateType]?.name || templateType,
+        requiredRoles: TEMPLATE_RBAC[templateType]?.allowedRoles || ['HR Manager', 'Admin'],
+        senderRoleLabel: TEMPLATE_RBAC[templateType]?.senderRoleLabel || 'HR / Admin',
+        currentUserRole: activeUser?.role || 'Employee',
+        currentUserName: activeUser?.name || 'Current User'
+      });
+      return;
+    }
+
     setIsSending(true);
     setLastSentLog(null);
 
@@ -208,7 +280,8 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
           type: templateType,
           body: bodyText,
           variables,
-          senderName
+          senderName,
+          userRole: activeUser?.role || 'Employee'
         })
       });
 
@@ -217,7 +290,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
         setLastSentLog(data.emailLog);
         onRefreshLogs();
       } else {
-        alert(`Error sending email via SMTP: ${data.message}`);
+        alert(`RBAC Security Alert / Delivery Error: ${data.message}`);
       }
     } catch (err) {
       alert(`Network error: ${err.message}`);
@@ -225,8 +298,6 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
       setIsSending(false);
     }
   };
-
-  const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin';
 
   return (
     <div className="space-y-6">
@@ -238,42 +309,37 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
             <span>AI Email Generator & SMTP Delivery Engine</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Generate formal policy notifications, leave approvals, and onboarding emails powered by RAG context.
+            Generate formal policy notifications, leave approvals, and onboarding emails protected by Role-Based Access Control (RBAC).
           </p>
         </div>
 
-        {/* Template Selectors */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handleTemplateChange('LEAVE_REQUEST')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              templateType === 'LEAVE_REQUEST'
-                ? 'lime-pill-btn text-slate-950 font-bold'
-                : 'bg-slate-950 text-slate-400 hover:bg-slate-900 border border-slate-800'
-            }`}
-          >
-            Leave Request
-          </button>
-          <button
-            onClick={() => handleTemplateChange('ONBOARDING_WELCOME')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              templateType === 'ONBOARDING_WELCOME'
-                ? 'lime-pill-btn text-slate-950 font-bold'
-                : 'bg-slate-950 text-slate-400 hover:bg-slate-900 border border-slate-800'
-            }`}
-          >
-            Onboarding Welcome
-          </button>
-          <button
-            onClick={() => handleTemplateChange('POLICY_NOTICE')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              templateType === 'POLICY_NOTICE'
-                ? 'lime-pill-btn text-slate-950 font-bold'
-                : 'bg-slate-950 text-slate-400 hover:bg-slate-900 border border-slate-800'
-            }`}
-          >
-            Policy Notice
-          </button>
+        {/* RBAC Protected Template Selectors */}
+        <div className="flex flex-wrap items-center gap-2">
+          {Object.entries(TEMPLATE_RBAC).map(([key, rule]) => {
+            const hasPermission = checkRbacPermission(key);
+            const isSelected = templateType === key;
+
+            return (
+              <button
+                key={key}
+                onClick={() => handleTemplateChange(key)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                  isSelected
+                    ? 'lime-pill-btn text-slate-950 font-bold shadow-lg'
+                    : hasPermission
+                    ? 'bg-slate-950 text-slate-300 hover:bg-slate-900 border border-slate-800'
+                    : 'bg-slate-950/60 text-slate-500 border border-slate-800/80 hover:border-amber-500/40'
+                }`}
+                title={hasPermission ? `Select ${rule.name} Template` : `RBAC Restricted: Requires ${rule.allowedRoles.join(' or ')} clearance`}
+              >
+                {!hasPermission && <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                <span>{rule.name}</span>
+                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${rule.badgeColor}`}>
+                  {rule.senderRoleLabel}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -559,6 +625,158 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
           </table>
         </div>
       </div>
+
+      {/* EMAIL TEMPLATES ROLE-BASED ACCESS CONTROL (RBAC) MATRIX */}
+      <div className="p-6 rounded-2xl glass-panel space-y-4 border border-indigo-500/30">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center space-x-2">
+              <ShieldCheck className="w-5 h-5 text-indigo-400" />
+              <span>Role-Based Access Control (RBAC) Permissions Matrix</span>
+            </h3>
+            <p className="text-xs text-slate-400">
+              Security clearance matrix defining sender roles, target audiences, and template permissions.
+            </p>
+          </div>
+          <span className="font-mono text-[11px] px-3 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
+            Active Role: <strong>{activeUser?.name} ({activeUser?.role})</strong>
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-900/80 border-b border-slate-800 text-slate-300 font-semibold">
+                <th className="py-3 px-4 rounded-tl-xl">Feature / Template</th>
+                <th className="py-3 px-4 text-cyan-400">🏖️ Leave Request</th>
+                <th className="py-3 px-4 text-amber-400">👋 Onboarding Welcome</th>
+                <th className="py-3 px-4 text-rose-400 rounded-tr-xl">📢 Policy Notice</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/80 text-slate-200">
+              <tr className="hover:bg-slate-900/50">
+                <td className="py-3 px-4 font-bold text-white bg-slate-950/60">Target Audience</td>
+                <td className="py-3 px-4">HR Manager / Department Lead</td>
+                <td className="py-3 px-4">Individual New Hire</td>
+                <td className="py-3 px-4">All Company Staff (<code className="text-slate-300 bg-slate-900 px-1 py-0.5 rounded font-mono">all-staff@...</code>)</td>
+              </tr>
+              <tr className="hover:bg-slate-900/50">
+                <td className="py-3 px-4 font-bold text-white bg-slate-950/60">Sender Role</td>
+                <td className="py-3 px-4">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                    Employee or HR
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    HR / Hiring Manager
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    HR / System Admin / Security
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-900/50">
+                <td className="py-3 px-4 font-bold text-white bg-slate-950/60">Primary Goal</td>
+                <td className="py-3 px-4">Request or approve PTO/leave time</td>
+                <td className="py-3 px-4">Welcome & onboard new employee</td>
+                <td className="py-3 px-4">Announce policy/security updates</td>
+              </tr>
+              <tr className="hover:bg-slate-900/50">
+                <td className="py-3 px-4 font-bold text-white bg-slate-950/60">Key Variables</td>
+                <td className="py-3 px-4 font-mono text-[11px] text-slate-300">Dates, Leave Type, Approver</td>
+                <td className="py-3 px-4 font-mono text-[11px] text-slate-300">Role, Mentor, Start Date, Stipend</td>
+                <td className="py-3 px-4 font-mono text-[11px] text-slate-300">Policy Title, Effective Date, Link</td>
+              </tr>
+              <tr className="hover:bg-slate-900/50 bg-slate-950/80">
+                <td className="py-3 px-4 font-bold text-white">Current Access Clearance</td>
+                <td className="py-3 px-4">
+                  {checkRbacPermission('LEAVE_REQUEST') ? (
+                    <span className="font-bold text-emerald-400 flex items-center space-x-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>ALLOWED</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-rose-400 flex items-center space-x-1">
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>RESTRICTED</span>
+                    </span>
+                  )}
+                </td>
+                <td className="py-3 px-4">
+                  {checkRbacPermission('ONBOARDING_WELCOME') ? (
+                    <span className="font-bold text-emerald-400 flex items-center space-x-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>ALLOWED</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-amber-400 flex items-center space-x-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>HR & ADMIN ONLY</span>
+                    </span>
+                  )}
+                </td>
+                <td className="py-3 px-4">
+                  {checkRbacPermission('POLICY_NOTICE') ? (
+                    <span className="font-bold text-emerald-400 flex items-center space-x-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>ALLOWED</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-rose-400 flex items-center space-x-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>HR & ADMIN ONLY</span>
+                    </span>
+                  )}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* RBAC ACCESS DENIED WARNING MODAL */}
+      {rbacDeniedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className="relative w-full max-w-md p-6 rounded-3xl bg-slate-900 border border-amber-500/40 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                <ShieldCheck className="w-5 h-5" />
+                <span>RBAC Security Clearance Denied</span>
+              </div>
+              <button
+                onClick={() => setRbacDeniedModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-2">
+              <p className="font-bold text-amber-200">
+                Access Restricted for Template: "{rbacDeniedModal.templateName}"
+              </p>
+              <p className="text-slate-300 leading-relaxed">
+                Your current active persona <strong className="text-white">{rbacDeniedModal.currentUserName}</strong> holds the role <strong className="text-amber-300">{rbacDeniedModal.currentUserRole}</strong>.
+              </p>
+              <p className="text-slate-300 leading-relaxed">
+                Under company security policy, dispatching this template requires: <strong className="text-indigo-300">{rbacDeniedModal.requiredRoles.join(' or ')}</strong> clearance.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col space-y-2">
+              <button
+                onClick={() => setRbacDeniedModal(null)}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Close Warning
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FULL REQUEST DETAIL & EMAIL REVIEW MODAL WITH BOTTOM APPROVE BUTTON */}
       {selectedRequestForReview && (

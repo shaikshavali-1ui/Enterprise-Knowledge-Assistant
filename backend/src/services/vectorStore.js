@@ -201,6 +201,19 @@ class VectorStoreService {
   }
 
   /**
+   * Delete a document from vector index by ID
+   */
+  deleteDocument(docId) {
+    const idx = this.documents.findIndex(d => d.id === docId);
+    if (idx !== -1) {
+      const removed = this.documents.splice(idx, 1)[0];
+      this.initializeIndex();
+      return removed;
+    }
+    return null;
+  }
+
+  /**
    * Get all indexed documents
    */
   getAllDocuments() {

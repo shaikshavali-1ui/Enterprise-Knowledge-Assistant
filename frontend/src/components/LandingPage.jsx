@@ -97,14 +97,9 @@ export default function LandingPage({ onLoginSuccess }) {
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img 
-              src="/nexus-logo.png" 
-              alt="Nexus Knowledge Hub Logo" 
-              className="w-10 h-10 object-contain rounded-xl shadow-glow-indigo border border-indigo-500/40 bg-slate-950 p-0.5" 
-            />
             <div>
-              <span className="font-extrabold text-lg tracking-wider text-white">NEXUS</span>
-              <span className="text-xs block text-indigo-400 font-medium tracking-widest uppercase -mt-1">KNOWLEDGE HUB</span>
+              <span className="font-extrabold text-lg tracking-wider text-white">ENTERPRISE KNOWLEDGE</span>
+              <span className="text-xs block text-indigo-400 font-medium tracking-widest uppercase -mt-1">ASSISTANT</span>
             </div>
           </div>
 
@@ -138,14 +133,14 @@ export default function LandingPage({ onLoginSuccess }) {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Nexus <br />
+            Enterprise <br />
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-sky-400 bg-clip-text text-transparent">
-              Knowledge Hub
+              Knowledge Assistant
             </span>
           </h1>
 
           <p className="text-lg text-slate-300 font-normal leading-relaxed max-w-xl">
-            A central platform that connects and organizes all company knowledge in one place.
+            An AI-powered system that helps employees find, understand, and use company knowledge quickly and efficiently.
           </p>
 
           {/* Key Value Points */}
@@ -304,69 +299,95 @@ export default function LandingPage({ onLoginSuccess }) {
               Brand Definition & Structure
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-              What does <span className="text-indigo-400">Nexus Knowledge Hub</span> mean?
+              What does <span className="text-indigo-400">Enterprise Knowledge Assistant</span> mean?
             </h2>
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-              Nexus Knowledge Hub is crafted from three core concepts that reflect its purpose as an intelligent enterprise knowledge platform.
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed italic border-l-4 border-indigo-500 pl-4 py-1 text-left bg-slate-900/80 rounded-r-xl">
+              "An AI-powered system that helps employees find, understand, and use company knowledge quickly and efficiently."
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Nexus */}
-            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
-                <Share2 className="w-6 h-6" />
+            {/* 🏢 Enterprise */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition-all duration-300 group space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-2xl mb-1 group-hover:scale-110 transition-transform">
+                🏢
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Nexus</h3>
-              <p className="text-xs font-mono text-indigo-400 mb-3">Connection • Link • Central Point</p>
+              <h3 className="text-2xl font-bold text-white">Enterprise</h3>
+              <p className="text-xs font-mono text-indigo-400">Large Organization / Company</p>
               <p className="text-sm text-slate-300 leading-relaxed">
-                The central point where different things come together. In your platform, it seamlessly bridges employees, document databases, and AI intelligence.
+                A large organization or enterprise company.
               </p>
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-1 font-mono">
+                <span className="text-indigo-300 font-bold block">Examples:</span>
+                <span className="text-slate-400 block">Infosys • TCS • Wipro • Google • Microsoft • Amazon</span>
+              </div>
+              <div className="text-[11px] font-bold text-emerald-400 font-mono pt-1">
+                ⇒ Enterprise = Company / Organization
+              </div>
             </div>
 
-            {/* Knowledge */}
-            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-purple-500/40 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6" />
+            {/* 📚 Knowledge */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-purple-500/40 transition-all duration-300 group space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-2xl mb-1 group-hover:scale-110 transition-transform">
+                📚
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Knowledge</h3>
-              <p className="text-xs font-mono text-purple-400 mb-3">Information • Documents • Policies</p>
+              <h3 className="text-2xl font-bold text-white">Knowledge</h3>
+              <p className="text-xs font-mono text-purple-400">Information & Company Data</p>
               <p className="text-sm text-slate-300 leading-relaxed">
-                All organizational facts, policy documents, HR SOPs, IT security rules, financial reports, and expert corporate data stored securely.
+                Information, documents, policies, manuals, reports, and internal company data.
               </p>
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-1 font-mono">
+                <span className="text-purple-300 font-bold block">Examples:</span>
+                <span className="text-slate-400 block">HR Policy • Leave Policy • Employee Handbook • Training Docs • Company Reports</span>
+              </div>
+              <div className="text-[11px] font-bold text-purple-300 font-mono pt-1">
+                ⇒ Knowledge = Corporate Assets & SOPs
+              </div>
             </div>
 
-            {/* Hub */}
-            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 mb-4 group-hover:scale-110 transition-transform">
-                <Globe className="w-6 h-6" />
+            {/* 🤖 Assistant */}
+            <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 transition-all duration-300 group space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-2xl mb-1 group-hover:scale-110 transition-transform">
+                🤖
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Hub</h3>
-              <p className="text-xs font-mono text-sky-400 mb-3">Centralized Place • Organized Resources</p>
+              <h3 className="text-2xl font-bold text-white">Assistant</h3>
+              <p className="text-xs font-mono text-sky-400">AI Helper & Task Automation</p>
               <p className="text-sm text-slate-300 leading-relaxed">
-                A single unified place where all company resources, AI search tools, and automated email operations are organized for immediate access.
+                A helper that assists users in completing tasks automatically.
               </p>
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs space-y-1 font-mono">
+                <span className="text-sky-300 font-bold block">Assistant Capabilities:</span>
+                <span className="text-slate-400 block">• Answers employee questions</span>
+                <span className="text-slate-400 block">• Searches company documents</span>
+                <span className="text-slate-400 block">• Generates & dispatches emails</span>
+              </div>
+              <div className="text-[11px] font-bold text-sky-300 font-mono pt-1">
+                ⇒ Assistant = Intelligent Automated Helper
+              </div>
             </div>
           </div>
 
-          {/* Full Definition Banner */}
-          <div className="p-8 rounded-3xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-purple-950/80 border border-indigo-500/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="space-y-2">
-              <span className="text-xs font-mono text-indigo-300 uppercase tracking-widest">Full Meaning & Purpose</span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
-                "A central hub where employees can access, search, and interact with all organizational knowledge through AI."
-              </h3>
-              <p className="text-sm text-slate-300 max-w-3xl pt-1">
-                <strong>One-line Description:</strong> Nexus Knowledge Hub is an AI-powered enterprise platform that connects employees with company knowledge and automates internal communication.
-              </p>
+          {/* Full Definition & Simple Explanation for Faculty Banner */}
+          <div className="p-8 rounded-3xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-purple-950/90 border border-indigo-500/30 space-y-6 shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 p-5 rounded-2xl bg-slate-950/60 border border-slate-800">
+                <span className="text-xs font-mono text-indigo-300 uppercase tracking-widest block font-bold">
+                  🎯 Complete Meaning
+                </span>
+                <p className="text-sm text-slate-200 leading-relaxed font-medium">
+                  "An intelligent AI assistant that helps employees access company knowledge, answer questions, and automate communication within an organization."
+                </p>
+              </div>
+
+              <div className="space-y-2 p-5 rounded-2xl bg-slate-950/60 border border-indigo-500/30">
+                <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest block font-bold">
+                  🎓 Simple Explanation (For Faculty & Presentations)
+                </span>
+                <p className="text-sm text-slate-200 leading-relaxed font-medium">
+                  "Enterprise Knowledge Assistant is an AI-powered chatbot designed for organizations. It helps employees quickly find information from company documents, policies, and reports, and can also generate and send professional emails automatically."
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shrink-0 flex items-center space-x-2"
-            >
-              <span>Verify & Enter Workspace</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </section>
@@ -708,11 +729,6 @@ export default function LandingPage({ onLoginSuccess }) {
       <footer className="py-12 border-t border-slate-800/80 text-xs text-slate-400 bg-slate-950">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center space-x-3">
-            <img 
-              src="/nexus-logo.png" 
-              alt="Nexus Logo" 
-              className="w-9 h-9 object-contain rounded-xl border border-indigo-500/40 bg-slate-950 p-0.5" 
-            />
             <div>
               <span className="font-bold text-white text-sm">NEXUS KNOWLEDGE HUB</span>
               <p className="text-[11px] text-slate-500">AI-Powered Enterprise Knowledge Assistant & Email Automation</p>

@@ -30,6 +30,14 @@ export const initialUsers = [
     role: 'Employee',
     department: 'Engineering',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_shavali',
+    email: 'shavali@enterprise.com',
+    name: 'Shavali (Software Engineer)',
+    role: 'Employee',
+    department: 'Engineering Division',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
   }
 ];
 
