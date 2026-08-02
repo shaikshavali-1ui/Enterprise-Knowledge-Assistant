@@ -853,8 +853,16 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
                 <span className="font-mono text-[10px] text-indigo-400 uppercase tracking-wider block">Employee Information</span>
                 <p className="font-bold text-sm text-white">{selectedRequestForReview.employeeName}</p>
-                <p className="text-slate-300">Email: <span className="font-mono text-slate-200">{selectedRequestForReview.employeeEmail}</span></p>
-                <p className="text-slate-400">Department: {selectedRequestForReview.department || 'Engineering'}</p>
+                <div className="mt-1">
+                  <label className="text-[10px] font-mono text-slate-400 block mb-0.5">Notification Email (Personal / Company To):</label>
+                  <input
+                    type="email"
+                    value={selectedRequestForReview.employeeEmail}
+                    onChange={(e) => setSelectedRequestForReview(prev => ({ ...prev, employeeEmail: e.target.value }))}
+                    className="w-full px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-mono focus:border-indigo-500"
+                  />
+                </div>
+                <p className="text-slate-400 text-[11px] mt-1">Department: {selectedRequestForReview.department || 'Engineering'}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
