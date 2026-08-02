@@ -106,7 +106,11 @@ export default function App() {
     }
   };
 
-  const fetchEmailLogs = async () => {
+  const fetchEmailLogs = async (newLog = null) => {
+    if (newLog) {
+      setEmailLogs(prev => [newLog, ...prev]);
+      return;
+    }
     try {
       const res = await fetch('/api/email/logs');
       const data = await res.json();
