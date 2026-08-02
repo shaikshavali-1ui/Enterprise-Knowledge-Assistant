@@ -342,6 +342,22 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
       setLastSentLog(simulatedLog);
       if (onRefreshLogs) onRefreshLogs(simulatedLog);
     } finally {
+      // PUSH TO HR APPROVAL QUEUE IF EMPLOYEE SUBMITS A LEAVE REQUEST
+      if (templateType === 'LEAVE_REQUEST') {
+        const newReq = {
+          id: `req_${Date.now().toString().slice(-3)}`,
+          employeeName: activeUser?.name || senderName || 'Employee',
+          employeeEmail: recipient || activeUser?.email || 'employee@enterprise.com',
+          department: activeUser?.department || 'Engineering Division',
+          requestType: `${variables.leaveType || 'Annual Vacation'} (${variables.startDate || 'Aug 10'} - ${variables.endDate || 'Aug 17'})`,
+          policyRef: 'HR-2026-88 (Annual Leave & PTO Policy)',
+          fullDetails: bodyText || `Employee ${activeUser?.name || 'User'} has submitted a formal leave request.`,
+          variables: { ...variables },
+          status: 'PENDING HR APPROVAL',
+          dateSubmitted: new Date().toISOString().split('T')[0]
+        };
+        setPendingRequests(prev => [newReq, ...prev]);
+      }
       setIsSending(false);
     }
   };
