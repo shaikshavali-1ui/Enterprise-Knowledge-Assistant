@@ -100,7 +100,15 @@ export default function App() {
     }
   };
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = async (actionItem = null, isDelete = false) => {
+    if (actionItem) {
+      if (isDelete) {
+        setDocuments(prev => prev.filter(d => d.id !== actionItem));
+      } else {
+        setDocuments(prev => [actionItem, ...prev]);
+      }
+      return;
+    }
     try {
       const res = await fetch('/api/documents');
       if (isJsonResponse(res)) {
