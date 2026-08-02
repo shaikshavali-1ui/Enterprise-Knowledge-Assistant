@@ -9,6 +9,7 @@ import RoleSimulator from './components/RoleSimulator';
 import AuditLogs from './components/AuditLogs';
 import LandingPage from './components/LandingPage';
 
+// Enterprise Knowledge Assistant - Core App Component
 export default function App() {
   const initialDefaultUsers = [
     {
