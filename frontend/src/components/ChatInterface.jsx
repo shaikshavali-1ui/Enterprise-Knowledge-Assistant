@@ -92,22 +92,6 @@ export default function ChatInterface({ activeUser, presetQuery, setPresetQuery,
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleSendMessage = async (textToSend = null) => {
-    const queryText = textToSend || inputValue;
-    if (!queryText.trim() || loading) return;
-
-    const userMsg = {
-      id: `msg_${Date.now()}`,
-      sender: 'user',
-      text: queryText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const updatedMsgsWithUser = [...messages, userMsg];
-    saveUserMessages(updatedMsgsWithUser);
-    setInputValue('');
-    setLoading(true);
-
   const synthesizeLocalRAG = (query, role) => {
     const qLower = query.toLowerCase();
 
