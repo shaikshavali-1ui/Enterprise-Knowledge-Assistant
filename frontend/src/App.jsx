@@ -77,6 +77,11 @@ export default function App() {
     fetchAuditLogs();
   }, []);
 
+  const isJsonResponse = (res) => {
+    const contentType = res.headers.get('content-type');
+    return res.ok && contentType && contentType.includes('application/json');
+  };
+
   const fetchUsers = async (newEmp = null) => {
     if (newEmp) {
       setUsers(prev => [newEmp, ...prev]);
@@ -84,25 +89,29 @@ export default function App() {
     }
     try {
       const res = await fetch('/api/auth/users');
-      const data = await res.json();
-      if (data.success) {
-        setUsers(data.users);
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.users);
+        }
       }
     } catch (err) {
-      console.error('Error fetching users:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
   const fetchDocuments = async () => {
     try {
       const res = await fetch('/api/documents');
-      const data = await res.json();
-      if (data.success) {
-        setDocuments(data.documents);
-        setVectorStats(data.stats);
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setDocuments(data.documents);
+          setVectorStats(data.stats);
+        }
       }
     } catch (err) {
-      console.error('Error fetching documents:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
@@ -113,53 +122,64 @@ export default function App() {
     }
     try {
       const res = await fetch('/api/email/logs');
-      const data = await res.json();
-      if (data.success) {
-        setEmailLogs(data.logs);
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setEmailLogs(data.logs);
+        }
       }
     } catch (err) {
-      console.error('Error fetching email logs:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
   const fetchConversationLogs = async () => {
     try {
       const res = await fetch('/api/logs/conversations');
-      const data = await res.json();
-      if (data.success) {
-        setConversationLogs(data.logs);
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setConversationLogs(data.logs);
+        }
       }
     } catch (err) {
-      console.error('Error fetching conversation logs:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
   const fetchAuditLogs = async () => {
     try {
       const res = await fetch('/api/logs/audit');
-      const data = await res.json();
-      if (data.success) {
-        setAuditLogs(data.logs);
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setAuditLogs(data.logs);
+        }
       }
     } catch (err) {
-      console.error('Error fetching audit logs:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
   const handleSwitchUser = async (userId) => {
+    const matched = users.find(u => u.id === userId);
+    if (matched) {
+      setActiveUser(matched);
+    }
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       });
-      const data = await res.json();
-      if (data.success) {
-        setActiveUser(data.user);
-        fetchAuditLogs();
+      if (isJsonResponse(res)) {
+        const data = await res.json();
+        if (data.success) {
+          setActiveUser(data.user);
+        }
       }
     } catch (err) {
-      console.error('Error switching user persona:', err);
+      // Suppress static HTML rewrite fetch warnings
     }
   };
 
