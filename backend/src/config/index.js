@@ -1,5 +1,13 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import fs from 'fs';
+
+if (fs.existsSync('.env')) {
+  dotenv.config({ path: '.env' });
+} else if (fs.existsSync('.env.example')) {
+  dotenv.config({ path: '.env.example' });
+} else {
+  dotenv.config();
+}
 
 export const config = {
   port: process.env.PORT || 5000,
@@ -7,6 +15,7 @@ export const config = {
   pineconeApiKey: process.env.PINECONE_API_KEY || '',
   pineconeEnvironment: process.env.PINECONE_ENV || 'us-east-1-aws',
   pineconeIndex: process.env.PINECONE_INDEX || 'enterprise-docs',
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.ethereal.email',

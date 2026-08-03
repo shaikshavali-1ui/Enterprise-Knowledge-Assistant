@@ -232,6 +232,7 @@ class VectorStoreService {
       totalChunks: this.vectorChunks.length,
       totalVocabularyTerms: this.vocabulary.size,
       pineconeConnected: Boolean(config.pineconeApiKey),
+      geminiConnected: Boolean(config.geminiApiKey),
       indexName: config.pineconeIndex
     };
   }

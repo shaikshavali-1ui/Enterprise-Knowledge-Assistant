@@ -1,4 +1,5 @@
 import { vectorStore } from './vectorStore.js';
+import { config } from '../config/index.js';
 
 class RAGEngineService {
   /**
@@ -14,6 +15,7 @@ class RAGEngineService {
     let responseAnswer = '';
     let citations = [];
     let emailActionSuggested = null;
+    let modelUsed = 'Rule-based RAG Engine';
 
     if (chunks.length === 0) {
       responseAnswer = `I couldn't find relevant information in the enterprise documents accessible to your role (**${userRole}**). ` +
@@ -21,10 +23,14 @@ class RAGEngineService {
           ? `Note: ${searchResult.filteredOutDueToRBAC} matching document passages exist but require higher security permissions.`
           : `Please check your query or verify with your department administrator.`);
     } else {
-      // Build synthesized answer from context
-      const contextText = chunks.map(c => c.content).join('\n\n');
-
-      responseAnswer = this.synthesizeAnswer(query, chunks, userRole);
+      // Try Gemini AI API if configured
+      const geminiAnswer = await this.generateGeminiAnswer(query, chunks, userRole);
+      if (geminiAnswer) {
+        responseAnswer = geminiAnswer;
+        modelUsed = 'Google Gemini 1.5 Flash';
+      } else {
+        responseAnswer = this.synthesizeAnswer(query, chunks, userRole);
+      }
       citations = chunks.map(c => ({
         documentId: c.documentId,
         title: c.documentTitle,
@@ -155,6 +161,65 @@ class RAGEngineService {
       };
     }
 
+    return null;
+  }
+
+  /**
+   * Call Google Gemini API to synthesize RAG response dynamically
+   */
+  async generateGeminiAnswer(query, chunks, userRole) {
+    if (!config.geminiApiKey) return null;
+
+    try {
+      const context = chunks.map((c, i) => `[Document ${i + 1}: ${c.documentTitle}]\n${c.content}`).join('\n\n');
+      const prompt = `You are an Enterprise Knowledge Assistant. Answer the user's query clearly and concisely based on the retrieved enterprise document passages below.
+
+User Role: ${userRole}
+User Query: ${query}
+
+Retrieved Document Passages:
+${context}
+
+Instructions:
+- Synthesize an accurate, professional answer using ONLY the facts provided in the document passages.
+- Highlight key takeaways using bold text and bullet points.
+- If the passages do not contain enough details, clearly state that based on the accessible documents.`;
+
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+      let response = null;
+      let usedModel = null;
+
+      for (const model of models) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.geminiApiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        if (res.ok) {
+          response = res;
+          usedModel = model;
+          break;
+        }
+      }
+
+      if (!response || !response.ok) {
+        console.warn('[RAGEngine] Gemini API request failed across models.');
+        return null;
+      }
+
+      const data = await response.json();
+      const answerText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (answerText) {
+        console.log('[RAGEngine] Successfully generated response using Google Gemini API.');
+        return answerText;
+      }
+    } catch (err) {
+      console.error('[RAGEngine] Gemini API call error:', err.message);
+    }
     return null;
   }
 }

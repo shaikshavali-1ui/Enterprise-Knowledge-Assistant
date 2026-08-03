@@ -105,9 +105,10 @@ class EmailService {
 
     try {
       if (this.transporter) {
-        const fromEmail = config.smtp.user || config.smtp.fromEmail || 'assistant@enterprise.corp';
+        const fromEmail = config.smtp.fromEmail || config.smtp.user || 'assistant@enterprise.corp';
+        const fromName = senderName || config.smtp.fromName || 'Enterprise Knowledge Assistant';
         const info = await this.transporter.sendMail({
-          from: `"${senderName}" <${fromEmail}>`,
+          from: `"${fromName}" <${fromEmail}>`,
           to,
           subject,
           html: htmlContent
