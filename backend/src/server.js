@@ -44,10 +44,12 @@ app.use('/api/logs', logRoutes);
 
 // Start Express Server
 const HOST = '0.0.0.0';
-app.listen(config.port, HOST, () => {
+const PORT = parseInt(process.env.PORT || config.port || '5000', 10);
+
+app.listen(PORT, HOST, () => {
   console.log(`=======================================================`);
   console.log(`🚀 Enterprise Knowledge Assistant Backend Running`);
-  console.log(`📡 Server: http://${HOST}:${config.port}`);
+  console.log(`📡 Bound Server: http://${HOST}:${PORT}`);
   console.log(`🔒 Security RBAC Engine: Active`);
   console.log(`🌲 Pinecone / Vector Index Engine: Active`);
   console.log(`📧 SMTP Email Transport: Ready`);
