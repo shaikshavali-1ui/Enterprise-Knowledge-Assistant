@@ -27,6 +27,49 @@ export default function ChatInterface({ activeUser, presetQuery, setPresetQuery,
   const userName = activeUser?.name || 'Employee';
   const userRole = activeUser?.role || 'Employee';
 
+  // Format markdown asterisks into clean Calibri typography
+  const formatMarkdownToCalibri = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+
+    return (
+      <div className="space-y-1.5 font-sans" style={{ fontFamily: "Calibri, 'Segoe UI', Candara, sans-serif" }}>
+        {lines.map((line, idx) => {
+          if (!line.trim()) return <div key={idx} className="h-1" />;
+
+          const trimmed = line.trim();
+          const isBullet = trimmed.startsWith('*') || trimmed.startsWith('•') || trimmed.startsWith('-');
+          let cleanLine = isBullet ? trimmed.replace(/^[\*\•\-]\s*/, '') : line;
+
+          // Parse **bold** markers
+          const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+          const renderedParts = parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={pIdx} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+          });
+
+          if (isBullet) {
+            return (
+              <div key={idx} className="flex items-start space-x-2 text-slate-100 text-[13.5px] leading-relaxed pl-1">
+                <span className="text-indigo-400 font-bold shrink-0 mt-0.5">•</span>
+                <div className="flex-1">{renderedParts}</div>
+              </div>
+            );
+          }
+
+          const isHeader = line.includes('**') && (line.toLowerCase().includes('summary:') || line.toLowerCase().includes('items:') || line.toLowerCase().includes('section'));
+          return (
+            <div key={idx} className={`text-[13.5px] leading-relaxed text-slate-100 ${isHeader ? 'font-bold text-indigo-200 mt-2 mb-1 text-sm' : ''}`}>
+              {renderedParts}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const promptChips = [
     "What is our annual leave & PTO entitlement for 2026?",
     "What hardware setup & $500 stipend is provided for onboarding?",
@@ -384,7 +427,7 @@ export default function ChatInterface({ activeUser, presetQuery, setPresetQuery,
                 <span>{msg.timestamp}</span>
               </div>
 
-              <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+              {formatMarkdownToCalibri(msg.text)}
 
               {/* AI Answer Source Telemetry Panel */}
               {msg.sender === 'assistant' && msg.id !== 'msg_welcome' && (
