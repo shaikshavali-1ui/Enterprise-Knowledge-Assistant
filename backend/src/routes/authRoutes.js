@@ -87,19 +87,31 @@ router.post('/verify-otp', (req, res) => {
   // OTP is Valid! Check user in corporate directory
   let user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
-  if (!user) {
+  if (user) {
+    // Activate employee account upon successful OTP verification
+    user.emailVerified = true;
+  } else {
     // Dynamically register verified employee if domain matches
     const namePart = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
     const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
     
     user = {
       id: `usr_${Date.now()}`,
+      employeeId: `EMP${Math.floor(100 + Math.random() * 900)}`,
       email: cleanEmail,
       name: `${formattedName} (Verified Employee)`,
+      fullName: formattedName,
       role: 'Employee',
       department: 'General Operations',
+      designation: 'Staff Associate',
+      phone: '+1 (555) 010-0000',
+      securityClearance: 'Level 1',
+      dateOfJoining: new Date().toISOString().split('T')[0],
+      status: 'Active',
+      emailVerified: true,
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
     };
+    initialUsers.push(user);
   }
 
   // Status Guard Check: Block Suspended & Resigned Accounts
@@ -144,9 +156,10 @@ router.post('/verify-otp', (req, res) => {
   });
 });
 
-// Get list of predefined enterprise users / personas
+// Get list of active & verified enterprise users
 router.get('/users', (req, res) => {
-  res.json({ success: true, users: initialUsers });
+  const verifiedUsers = initialUsers.filter(u => u.emailVerified !== false);
+  res.json({ success: true, users: verifiedUsers });
 });
 
 // Allowed organization domains for company employees
@@ -322,11 +335,13 @@ router.post('/users/add', async (req, res) => {
     `Admin/HR created employee '${newEmployee.name}' (${newEmployee.employeeId}) with ${newEmployee.securityClearance} in '${newEmployee.department}'.`
   );
 
+  const verifiedUsers = initialUsers.filter(u => u.emailVerified !== false);
+
   res.json({
     success: true,
-    message: `Employee '${newEmployee.name}' (${newEmployee.employeeId}) successfully onboarded. Verification email dispatched to ${cleanEmail}.`,
+    message: `Employee '${newEmployee.name}' (${newEmployee.employeeId}) provisioned. 6-digit OTP verification email sent to ${cleanEmail}. Account will activate after OTP verification.`,
     user: newEmployee,
-    users: initialUsers
+    users: verifiedUsers
   });
 });
 

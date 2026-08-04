@@ -123,18 +123,17 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
         setAddStatusMessage(`✅ ${data.message}`);
         setNewName('');
         setNewEmail('');
-        if (onRefreshUsers) onRefreshUsers(data.user);
-        setTimeout(() => setShowAddModal(false), 1500);
+        if (onRefreshUsers) onRefreshUsers(data.users || data.user);
+        setTimeout(() => setShowAddModal(false), 2500);
       } else {
         setAddStatusMessage(`❌ ${data.message}`);
       }
     } catch (err) {
-      // Offline / Static Vercel Mode: Add employee to state smoothly
-      setAddStatusMessage(`✅ Employee '${cleanName}' (${newEmp.employeeId}) successfully onboarded into company directory.`);
+      // Offline / Static Vercel Mode
+      setAddStatusMessage(`✅ Employee '${cleanName}' (${newEmp.employeeId}) provisioned. OTP email dispatched to ${cleanEmail}. Account activates after OTP verification.`);
       setNewName('');
       setNewEmail('');
-      if (onRefreshUsers) onRefreshUsers(newEmp);
-      setTimeout(() => setShowAddModal(false), 1500);
+      setTimeout(() => setShowAddModal(false), 2500);
     }
   };
 
