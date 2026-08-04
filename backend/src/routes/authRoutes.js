@@ -42,8 +42,7 @@ router.post('/send-otp', async (req, res) => {
 
     res.json({
       success: true,
-      message: `A 6-digit verification OTP code has been dispatched to '${cleanEmail}'. Please check your inbox.`,
-      otpPreview: process.env.NODE_ENV !== 'production' ? otpCode : undefined
+      message: `A 6-digit verification OTP code has been dispatched to '${cleanEmail}'. Please check your inbox.`
     });
   } catch (err) {
     console.error('[AuthRoutes] Error sending OTP email:', err.message);

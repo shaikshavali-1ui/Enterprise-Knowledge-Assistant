@@ -43,7 +43,6 @@ export default function LandingPage({ onLoginSuccess }) {
   const [otpStep, setOtpStep] = useState('EMAIL'); // 'EMAIL' or 'OTP'
   const [otpInput, setOtpInput] = useState('');
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
-  const [otpPreview, setOtpPreview] = useState('');
 
   // Sample predefined employee personas for quick testing
   const registeredEmployees = [
@@ -64,6 +63,7 @@ export default function LandingPage({ onLoginSuccess }) {
     setLoading(true);
     setErrorMessage('');
     setOtpSuccessMsg('');
+    setOtpInput(''); // Leave input empty so user enters code from their email inbox
 
     try {
       const res = await fetch('/api/auth/send-otp', {
@@ -78,21 +78,14 @@ export default function LandingPage({ onLoginSuccess }) {
       if (data.success) {
         setOtpStep('OTP');
         setOtpSuccessMsg(data.message);
-        if (data.otpPreview) {
-          setOtpPreview(data.otpPreview);
-          setOtpInput(data.otpPreview); // Auto-fill for convenience
-        }
       } else {
         setErrorMessage(data.message || 'Failed to send OTP email.');
       }
     } catch (err) {
       setLoading(false);
       // Offline / Static fallback
-      const simulatedOtp = '123456';
       setOtpStep('OTP');
-      setOtpSuccessMsg(`OTP sent to ${targetEmail}. (Simulated Code: ${simulatedOtp})`);
-      setOtpPreview(simulatedOtp);
-      setOtpInput(simulatedOtp);
+      setOtpSuccessMsg(`OTP code dispatched to ${targetEmail}. Please check your inbox.`);
     }
   };
 
@@ -309,11 +302,6 @@ export default function LandingPage({ onLoginSuccess }) {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-semibold block">{otpSuccessMsg}</span>
-                  {otpPreview && (
-                    <span className="text-[11px] font-mono text-indigo-300 block mt-0.5">
-                      Dev Preview Code: <strong>{otpPreview}</strong>
-                    </span>
-                  )}
                 </div>
               </div>
             )}
@@ -792,11 +780,6 @@ export default function LandingPage({ onLoginSuccess }) {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-semibold block">{otpSuccessMsg}</span>
-                  {otpPreview && (
-                    <span className="text-[11px] font-mono text-indigo-300 block mt-0.5">
-                      Dev Preview Code: <strong>{otpPreview}</strong>
-                    </span>
-                  )}
                 </div>
               </div>
             )}
