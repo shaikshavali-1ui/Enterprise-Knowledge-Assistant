@@ -146,6 +146,48 @@ class EmailService {
   }
 
   /**
+   * Send 6-Digit Verification OTP Email via Nodemailer / Gmail SMTP
+   */
+  async sendOTPEmail({ to, otpCode }) {
+    const subject = `🔐 ${otpCode} is your Enterprise Verification Code`;
+    const primaryColor = '#4f46e5';
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 550px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+        <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 24px; text-align: center;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: bold;">Enterprise Knowledge Assistant</h2>
+          <p style="color: #c7d2fe; margin: 6px 0 0 0; font-size: 13px;">Security Identity & Email Verification</p>
+        </div>
+        <div style="padding: 28px; color: #374151; font-size: 15px; line-height: 1.6;">
+          <p style="margin-top: 0;">Hello,</p>
+          <p>You requested an identity verification code to access the <strong>Enterprise Knowledge Assistant</strong> portal.</p>
+          
+          <div style="margin: 24px 0; text-align: center;">
+            <div style="display: inline-block; background-color: #f3f4f6; border: 2px dashed ${primaryColor}; border-radius: 10px; padding: 14px 28px;">
+              <span style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: ${primaryColor};">${otpCode}</span>
+            </div>
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280;">This 6-digit code will expire in <strong>10 minutes</strong>.</p>
+          </div>
+
+          <p style="font-size: 13px; color: #4b5563;">If you did not request this verification code, please ignore this email or contact your IT security administrator immediately.</p>
+          
+          <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center;">
+            Automated Security Verification System • Enterprise Knowledge Assistant
+          </div>
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject,
+      type: 'SECURITY_OTP',
+      body: `Your 6-digit email verification OTP code is: ${otpCode} (Valid for 10 minutes).`,
+      senderName: 'Enterprise Security Assistant'
+    });
+  }
+
+  /**
    * Get email logs
    */
   getLogs() {

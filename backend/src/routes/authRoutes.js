@@ -3,8 +3,126 @@ import jwt from 'jsonwebtoken';
 import { initialUsers } from '../data/seedData.js';
 import { config } from '../config/index.js';
 import { loggerService } from '../services/loggerService.js';
+import { otpService } from '../services/otpService.js';
+import { emailService } from '../services/emailService.js';
 
 const router = express.Router();
+
+// ----------------------------------------------------
+// OTP EMAIL VERIFICATION ENDPOINTS
+// ----------------------------------------------------
+
+/**
+ * Generate & Send 6-Digit Verification OTP via Nodemailer / Gmail SMTP
+ */
+router.post('/send-otp', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid company email address.'
+    });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    // Generate 6-digit OTP
+    const otpCode = otpService.generateOTP(cleanEmail);
+
+    // Dispatch OTP email via Nodemailer / Gmail SMTP
+    await emailService.sendOTPEmail({ to: cleanEmail, otpCode });
+
+    loggerService.logAudit(
+      'OTP_DISPATCHED',
+      { email: cleanEmail },
+      `6-digit verification code sent to ${cleanEmail}.`
+    );
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification OTP code has been dispatched to '${cleanEmail}'. Please check your inbox.`,
+      otpPreview: process.env.NODE_ENV !== 'production' ? otpCode : undefined
+    });
+  } catch (err) {
+    console.error('[AuthRoutes] Error sending OTP email:', err.message);
+    res.status(500).json({
+      success: false,
+      message: `Failed to dispatch OTP email: ${err.message}`
+    });
+  }
+});
+
+/**
+ * Verify 6-Digit OTP & Authenticate Employee
+ */
+router.post('/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email address and 6-digit OTP code are required.'
+    });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Verify OTP using OTP service
+  const otpResult = otpService.verifyOTP(cleanEmail, otp);
+
+  if (!otpResult.valid) {
+    loggerService.logAudit(
+      'SECURITY_ALERT',
+      { email: cleanEmail },
+      `OTP Verification Failed for '${cleanEmail}': ${otpResult.message}`
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: otpResult.message
+    });
+  }
+
+  // OTP is Valid! Check user in corporate directory
+  let user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    // Dynamically register verified employee if domain matches
+    const namePart = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
+    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    
+    user = {
+      id: `usr_${Date.now()}`,
+      email: cleanEmail,
+      name: `${formattedName} (Verified Employee)`,
+      role: 'Employee',
+      department: 'General Operations',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+    };
+  }
+
+  // Issue Security Clearance JWT Token
+  const token = jwt.sign(
+    { id: user.id, name: user.name, role: user.role, email: user.email },
+    config.jwtSecret,
+    { expiresIn: '24h' }
+  );
+
+  loggerService.logAudit(
+    'USER_LOGIN_OTP_VERIFIED',
+    user,
+    `Employee '${user.name}' successfully verified email ownership via 6-digit OTP and logged in.`
+  );
+
+  res.json({
+    success: true,
+    user,
+    token,
+    message: `Verification Successful: Welcome ${user.name}!`
+  });
+});
 
 // Get list of predefined enterprise users / personas
 router.get('/users', (req, res) => {

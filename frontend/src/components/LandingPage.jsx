@@ -28,7 +28,8 @@ import {
   X,
   UserCheck,
   Eye,
-  EyeOff
+  EyeOff,
+  RefreshCw
 } from 'lucide-react';
 
 export default function LandingPage({ onLoginSuccess }) {
@@ -38,6 +39,12 @@ export default function LandingPage({ onLoginSuccess }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
 
+  // OTP Verification States
+  const [otpStep, setOtpStep] = useState('EMAIL'); // 'EMAIL' or 'OTP'
+  const [otpInput, setOtpInput] = useState('');
+  const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
+  const [otpPreview, setOtpPreview] = useState('');
+
   // Sample predefined employee personas for quick testing
   const registeredEmployees = [
     { id: 'usr_employee', email: 'dev.john@enterprise.com', name: 'John Doe', role: 'Software Engineer', dept: 'Engineering' },
@@ -46,22 +53,64 @@ export default function LandingPage({ onLoginSuccess }) {
     { id: 'usr_admin', email: 'admin@enterprise.com', name: 'Sarah Connor', role: 'System Admin', dept: 'Executive' }
   ];
 
-  const handleVerifyAndLogin = async (e, customEmail = null, customUserId = null) => {
+  const handleRequestOTP = async (e, customEmail = null) => {
     if (e) e.preventDefault();
+    const targetEmail = customEmail || email;
+    if (!targetEmail || !targetEmail.includes('@')) {
+      setErrorMessage('Please enter a valid company email address.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+    setOtpSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail })
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (data.success) {
+        setOtpStep('OTP');
+        setOtpSuccessMsg(data.message);
+        if (data.otpPreview) {
+          setOtpPreview(data.otpPreview);
+          setOtpInput(data.otpPreview); // Auto-fill for convenience
+        }
+      } else {
+        setErrorMessage(data.message || 'Failed to send OTP email.');
+      }
+    } catch (err) {
+      setLoading(false);
+      // Offline / Static fallback
+      const simulatedOtp = '123456';
+      setOtpStep('OTP');
+      setOtpSuccessMsg(`OTP sent to ${targetEmail}. (Simulated Code: ${simulatedOtp})`);
+      setOtpPreview(simulatedOtp);
+      setOtpInput(simulatedOtp);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    if (e) e.preventDefault();
+    if (!otpInput || otpInput.trim().length !== 6) {
+      setErrorMessage('Please enter the 6-digit OTP verification code.');
+      return;
+    }
+
     setLoading(true);
     setErrorMessage('');
 
-    const targetEmail = customEmail || email;
-
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: customUserId || null,
-          email: targetEmail, 
-          password 
-        })
+        body: JSON.stringify({ email, otp: otpInput.trim() })
       });
 
       const data = await res.json();
@@ -71,14 +120,14 @@ export default function LandingPage({ onLoginSuccess }) {
         setShowModal(false);
         onLoginSuccess(data.user);
       } else {
-        setErrorMessage(data.message || 'Verification Failed: Email is not recognized in the company directory.');
+        setErrorMessage(data.message || 'Invalid or expired OTP code.');
       }
     } catch (err) {
       setLoading(false);
-      // Seamless Offline / Static Deployment Fallback
-      const matched = registeredEmployees.find(u => u.email.toLowerCase() === targetEmail.toLowerCase() || u.id === customUserId);
+      // Offline verification fallback
+      setShowModal(false);
+      const matched = registeredEmployees.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (matched) {
-        setShowModal(false);
         const mappedRole = matched.role === 'Software Engineer' ? 'Employee' : matched.role === 'HR Lead' ? 'HR Manager' : matched.role === 'Finance Director' ? 'Finance' : matched.role;
         onLoginSuccess({
           id: matched.id,
@@ -89,13 +138,11 @@ export default function LandingPage({ onLoginSuccess }) {
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
         });
       } else {
-        // Fallback for custom company email login offline
-        const namePart = targetEmail.split('@')[0].replace(/[._-]/g, ' ');
+        const namePart = email.split('@')[0].replace(/[._-]/g, ' ');
         const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-        setShowModal(false);
         onLoginSuccess({
           id: `usr_${Date.now()}`,
-          email: targetEmail,
+          email,
           name: `${formattedName} (Verified Employee)`,
           role: 'Employee',
           department: 'General Operations',
@@ -107,7 +154,7 @@ export default function LandingPage({ onLoginSuccess }) {
 
   const selectPersona = (emp) => {
     setEmail(emp.email);
-    handleVerifyAndLogin(null, emp.email, emp.id);
+    handleRequestOTP(null, emp.email);
   };
 
   const [showPassword, setShowPassword] = useState(false);
@@ -241,10 +288,14 @@ export default function LandingPage({ onLoginSuccess }) {
 
             <div>
               <h3 className="text-lg font-bold text-white">Employee Login & Verification</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Enter your company email to verify identity and access RAG docs.</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {otpStep === 'EMAIL' 
+                  ? 'Enter your company email address to receive a 6-digit OTP.' 
+                  : `Enter the 6-digit verification code sent to ${email}.`}
+              </p>
             </div>
 
-            {/* Verification Failure Banner */}
+            {/* Error Banner */}
             {errorMessage && (
               <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2">
                 <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
@@ -252,48 +303,104 @@ export default function LandingPage({ onLoginSuccess }) {
               </div>
             )}
 
-            <form onSubmit={handleVerifyAndLogin} className="space-y-3.5">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Company Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                  placeholder="name@enterprise.com"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold text-slate-300">Password</label>
-                  <a href="#" className="text-[11px] text-indigo-400 hover:text-indigo-300">Forgot?</a>
+            {/* OTP Sent Success Banner */}
+            {otpSuccessMsg && (
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-start space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block">{otpSuccessMsg}</span>
+                  {otpPreview && (
+                    <span className="text-[11px] font-mono text-indigo-300 block mt-0.5">
+                      Dev Preview Code: <strong>{otpPreview}</strong>
+                    </span>
+                  )}
                 </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
               </div>
+            )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <span>Verifying Employee Credentials...</span>
-                ) : (
-                  <>
-                    <span>Verify & Open Dashboard</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+            {otpStep === 'EMAIL' ? (
+              <form onSubmit={handleRequestOTP} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Company Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+                    placeholder="name@enterprise.com"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span>Sending 6-Digit OTP...</span>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      <span>Send Verification Code (OTP)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-3.5">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-semibold text-slate-300">6-Digit Verification OTP Code</label>
+                    <button
+                      type="button"
+                      onClick={() => setOtpStep('EMAIL')}
+                      className="text-[11px] text-indigo-400 hover:text-indigo-300"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3.5 py-3 rounded-xl bg-slate-950/90 border border-indigo-500/50 text-center font-mono text-xl font-bold tracking-widest text-indigo-300 focus:outline-none focus:border-indigo-400 transition-colors"
+                    placeholder="123456"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span>Validating OTP Code...</span>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Verify OTP & Open Dashboard</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => handleRequestOTP(e)}
+                    disabled={loading}
+                    className="text-xs text-slate-400 hover:text-indigo-300 inline-flex items-center space-x-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Resend OTP Code</span>
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Quick Test Employee Personas */}
             <div className="pt-2 border-t border-slate-800 space-y-2">
@@ -671,6 +778,7 @@ export default function LandingPage({ onLoginSuccess }) {
               </div>
             </div>
 
+            {/* Error Banner */}
             {errorMessage && (
               <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2">
                 <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
@@ -678,57 +786,104 @@ export default function LandingPage({ onLoginSuccess }) {
               </div>
             )}
 
-            <form onSubmit={handleVerifyAndLogin} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Company Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
-                  placeholder="name@enterprise.com"
-                />
+            {/* OTP Sent Success Banner */}
+            {otpSuccessMsg && (
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-start space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block">{otpSuccessMsg}</span>
+                  {otpPreview && (
+                    <span className="text-[11px] font-mono text-indigo-300 block mt-0.5">
+                      Dev Preview Code: <strong>{otpPreview}</strong>
+                    </span>
+                  )}
+                </div>
               </div>
+            )}
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Password</label>
-                <div className="relative">
+            {otpStep === 'EMAIL' ? (
+              <form onSubmit={handleRequestOTP} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Company Email</label>
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type="email"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
-                    placeholder="Enter password"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                    placeholder="name@enterprise.com"
                   />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span>Sending 6-Digit OTP...</span>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      <span>Send Verification Code (OTP)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-semibold text-slate-300">6-Digit Verification OTP Code</label>
+                    <button
+                      type="button"
+                      onClick={() => setOtpStep('EMAIL')}
+                      className="text-[11px] text-indigo-400 hover:text-indigo-300"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-indigo-500/50 text-center font-mono text-xl font-bold tracking-widest text-indigo-300 focus:outline-none focus:border-indigo-400"
+                    placeholder="123456"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span>Validating OTP Code...</span>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Verify OTP & Launch Dashboard</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-center pt-1">
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-200 transition-colors"
-                    title={showPassword ? "Hide Password" : "Show Password"}
+                    onClick={(e) => handleRequestOTP(e)}
+                    disabled={loading}
+                    className="text-xs text-slate-400 hover:text-indigo-300 inline-flex items-center space-x-1"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Resend OTP Code</span>
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1 font-mono">Default Demo Password: <strong className="text-indigo-400">password123</strong></p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <span>Verifying Employee...</span>
-                ) : (
-                  <>
-                    <span>Verify & Launch Dashboard</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+              </form>
+            )}
 
             <div className="pt-3 border-t border-slate-800 space-y-2">
               <span className="text-[10px] font-mono uppercase text-slate-400 block">
