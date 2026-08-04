@@ -29,12 +29,19 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
   const [showAuthPassword, setShowAuthPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  // New Employee Onboarding state
+  // New Employee Onboarding state (Full 11-Field Schema)
   const [showAddModal, setShowAddModal] = useState(false);
+  const [newEmpId, setNewEmpId] = useState('EMP006');
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('+1 (555) 019-3821');
   const [newRole, setNewRole] = useState('Employee');
   const [newDept, setNewDept] = useState('Engineering');
+  const [newDesignation, setNewDesignation] = useState('Specialist');
+  const [newClearance, setNewClearance] = useState('Level 1');
+  const [newDoj, setNewDoj] = useState(new Date().toISOString().split('T')[0]);
+  const [newStatus, setNewStatus] = useState('Active');
+  const [newPhoto, setNewPhoto] = useState('');
   const [addStatusMessage, setAddStatusMessage] = useState('');
 
   const canOnboard = activeUser?.role === 'Admin' || activeUser?.role === 'HR Manager';
@@ -53,6 +60,10 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
       return;
     }
     if (selectedUserForAuth) {
+      if (selectedUserForAuth.status === 'Suspended' || selectedUserForAuth.status === 'Resigned') {
+        setAuthError(`❌ Access Denied: Account '${selectedUserForAuth.name}' is marked as '${selectedUserForAuth.status}'. Login is restricted by Corporate Security.`);
+        return;
+      }
       onSwitchUser(selectedUserForAuth.id);
       setSelectedUserForAuth(null);
     }
@@ -71,11 +82,19 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
     const cleanName = newName.trim();
     const newEmp = {
       id: `usr_${Date.now()}`,
+      employeeId: newEmpId || `EMP00${users.length + 1}`,
       email: cleanEmail,
-      name: `${cleanName} (${newRole || 'Employee'})`,
+      name: cleanName,
+      fullName: cleanName,
+      phone: newPhone,
       role: newRole || 'Employee',
       department: newDept || 'Engineering',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+      designation: newDesignation || 'Specialist',
+      securityClearance: newClearance || 'Level 1',
+      dateOfJoining: newDoj,
+      status: newStatus || 'Active',
+      emailVerified: false,
+      avatar: newPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
     };
 
     try {
@@ -83,10 +102,18 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          employeeId: newEmp.employeeId,
+          fullName: cleanName,
           name: cleanName,
           email: cleanEmail,
+          phone: newPhone,
           role: newRole,
           department: newDept,
+          designation: newDesignation,
+          securityClearance: newClearance,
+          dateOfJoining: newDoj,
+          status: newStatus,
+          profilePhoto: newPhoto,
           requesterRole: activeUser?.role
         })
       });
@@ -103,7 +130,7 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
       }
     } catch (err) {
       // Offline / Static Vercel Mode: Add employee to state smoothly
-      setAddStatusMessage(`✅ Employee '${cleanName}' successfully onboarded into company directory.`);
+      setAddStatusMessage(`✅ Employee '${cleanName}' (${newEmp.employeeId}) successfully onboarded into company directory.`);
       setNewName('');
       setNewEmail('');
       if (onRefreshUsers) onRefreshUsers(newEmp);
@@ -437,58 +464,141 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
               </div>
             )}
 
-            <form onSubmit={handleAddEmployee} className="space-y-3 text-xs">
-              <div>
-                <label className="font-semibold text-slate-300">Full Employee Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Alex Morgan"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
-                />
-              </div>
+            <form onSubmit={handleAddEmployee} className="space-y-3 text-xs max-h-[75vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-300">Employee ID *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="EMP006"
+                    value={newEmpId}
+                    onChange={(e) => setNewEmpId(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  />
+                </div>
 
-              <div>
-                <label className="font-semibold text-slate-300">Corporate Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="alex.m@enterprise.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
-                />
+                <div>
+                  <label className="font-semibold text-slate-300">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Rahul Sharma"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-300">Role Security Clearance</label>
-                  <select
-                    value={newRole}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
-                  >
-                    <option value="Employee">Employee (Public Only)</option>
-                    <option value="HR Manager">HR Manager (HR-Only)</option>
-                    <option value="Finance">Finance (Executive-Only)</option>
-                    <option value="Admin">Admin (Full Access)</option>
-                  </select>
+                  <label className="font-semibold text-slate-300">Corporate Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="rahul@company.com"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-300">Department</label>
+                  <label className="font-semibold text-slate-300">Phone Number *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+91 9876543210"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-300">Department *</label>
                   <select
                     value={newDept}
                     onChange={(e) => setNewDept(e.target.value)}
                     className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
                   >
-                    <option value="Engineering">Engineering</option>
                     <option value="Human Resources">Human Resources</option>
+                    <option value="Engineering">Engineering</option>
                     <option value="Finance & Payroll">Finance & Payroll</option>
                     <option value="Executive Management">Executive Management</option>
                     <option value="Operations">Operations</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-slate-300">Designation *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="HR Manager / Tech Lead"
+                    value={newDesignation}
+                    onChange={(e) => setNewDesignation(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-300">System Role *</label>
+                  <select
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input"
+                  >
+                    <option value="Employee">Employee</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-slate-300">Security Clearance Level *</label>
+                  <select
+                    value={newClearance}
+                    onChange={(e) => setNewClearance(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  >
+                    <option value="Level 1">Level 1 - Public Docs</option>
+                    <option value="Level 2">Level 2 - Department Docs</option>
+                    <option value="Level 3">Level 3 - Confidential SOPs</option>
+                    <option value="Level 4">Level 4 - Executive Only</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-300">Date of Joining *</label>
+                  <input
+                    type="date"
+                    required
+                    value={newDoj}
+                    onChange={(e) => setNewDoj(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-slate-300">Account Status *</label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-xl glass-input font-mono"
+                  >
+                    <option value="Active">Active (Login Allowed)</option>
+                    <option value="On Leave">On Leave (Login Allowed)</option>
+                    <option value="Suspended">Suspended (Login Blocked)</option>
+                    <option value="Resigned">Resigned (Login Blocked)</option>
                   </select>
                 </div>
               </div>
@@ -505,7 +615,7 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
                   type="submit"
                   className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-glow-indigo"
                 >
-                  Register Employee
+                  Provision Employee & Send OTP Email
                 </button>
               </div>
             </form>

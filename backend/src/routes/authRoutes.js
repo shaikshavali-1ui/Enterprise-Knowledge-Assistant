@@ -102,9 +102,30 @@ router.post('/verify-otp', (req, res) => {
     };
   }
 
+  // Status Guard Check: Block Suspended & Resigned Accounts
+  if (user.status === 'Suspended' || user.status === 'Resigned') {
+    loggerService.logAudit(
+      'SECURITY_ALERT',
+      user,
+      `Access Denied: Attempted login by ${user.status} account '${user.email}'`
+    );
+    return res.status(403).json({
+      success: false,
+      message: `Access Denied: Account '${user.email}' is currently marked as '${user.status}'. Login is restricted by Corporate Security.`
+    });
+  }
+
   // Issue Security Clearance JWT Token
   const token = jwt.sign(
-    { id: user.id, name: user.name, role: user.role, email: user.email },
+    { 
+      id: user.id, 
+      employeeId: user.employeeId, 
+      name: user.name, 
+      role: user.role, 
+      email: user.email, 
+      securityClearance: user.securityClearance || 'Level 1',
+      department: user.department 
+    },
     config.jwtSecret,
     { expiresIn: '24h' }
   );
@@ -112,7 +133,7 @@ router.post('/verify-otp', (req, res) => {
   loggerService.logAudit(
     'USER_LOGIN_OTP_VERIFIED',
     user,
-    `Employee '${user.name}' successfully verified email ownership via 6-digit OTP and logged in.`
+    `Employee '${user.name}' (${user.securityClearance || 'Level 1'}) verified email ownership and logged in.`
   );
 
   res.json({
@@ -154,10 +175,18 @@ router.post('/login', (req, res) => {
         
         user = {
           id: `usr_${Date.now()}`,
+          employeeId: `EMP${Math.floor(100 + Math.random() * 900)}`,
           email: cleanEmail,
           name: `${formattedName} (Verified Employee)`,
+          fullName: formattedName,
           role: 'Employee',
           department: 'General Operations',
+          designation: 'Staff Associate',
+          phone: '+1 (555) 010-0000',
+          securityClearance: 'Level 1',
+          dateOfJoining: new Date().toISOString().split('T')[0],
+          status: 'Active',
+          emailVerified: true,
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
         };
       }
@@ -179,14 +208,35 @@ router.post('/login', (req, res) => {
     });
   }
 
-  // 4. Verification Successful - Issue Security Clearance JWT Token
+  // 4. Status Guard Check: Block Suspended & Resigned Accounts
+  if (user.status === 'Suspended' || user.status === 'Resigned') {
+    loggerService.logAudit(
+      'SECURITY_ALERT',
+      user,
+      `Access Denied: Attempted login by ${user.status} account '${user.email}'`
+    );
+    return res.status(403).json({
+      success: false,
+      message: `Access Denied: Account '${user.email}' is currently marked as '${user.status}'. Login is restricted by Corporate Security.`
+    });
+  }
+
+  // 5. Verification Successful - Issue Security Clearance JWT Token
   const token = jwt.sign(
-    { id: user.id, name: user.name, role: user.role, email: user.email },
+    { 
+      id: user.id, 
+      employeeId: user.employeeId, 
+      name: user.name, 
+      role: user.role, 
+      email: user.email,
+      securityClearance: user.securityClearance || 'Level 1',
+      department: user.department 
+    },
     config.jwtSecret,
     { expiresIn: '24h' }
   );
 
-  loggerService.logAudit('USER_LOGIN', user, `Employee Verified: ${user.name} logged in with ${user.role} clearance.`);
+  loggerService.logAudit('USER_LOGIN', user, `Employee Verified: ${user.name} logged in with ${user.role} (${user.securityClearance || 'Level 1'}) clearance.`);
 
   res.json({
     success: true,
@@ -196,10 +246,25 @@ router.post('/login', (req, res) => {
   });
 });
 
-// Admin / HR Onboarding - Add new employee to corporate directory
-router.post('/users/add', (req, res) => {
-  const { name, email, role, department, requesterRole } = req.body;
+// Admin / HR Onboarding - Provision new employee with full 11-field enterprise schema
+router.post('/users/add', async (req, res) => {
+  const { 
+    employeeId,
+    fullName,
+    name, 
+    email, 
+    phone,
+    department, 
+    designation,
+    role, 
+    securityClearance,
+    dateOfJoining,
+    status,
+    profilePhoto,
+    requesterRole 
+  } = req.body;
 
+  // Enforce Admin / HR authorization check
   if (requesterRole === 'Employee' || (requesterRole && requesterRole !== 'Admin' && requesterRole !== 'HR Manager')) {
     loggerService.logAudit('SECURITY_ALERT', { name: 'User', role: requesterRole }, `Access Denied: Attempted employee onboarding without Admin/HR clearance.`);
     return res.status(403).json({
@@ -208,8 +273,9 @@ router.post('/users/add', (req, res) => {
     });
   }
 
-  if (!name || !email) {
-    return res.status(400).json({ success: false, message: 'Name and company email are required.' });
+  const employeeName = fullName || name;
+  if (!employeeName || !email) {
+    return res.status(400).json({ success: false, message: 'Full Name and company email are required fields.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
@@ -220,26 +286,45 @@ router.post('/users/add', (req, res) => {
     return res.status(400).json({ success: false, message: `Employee with email '${cleanEmail}' is already registered.` });
   }
 
+  const generatedId = `EMP${String(initialUsers.length + 1).padStart(3, '0')}`;
+
   const newEmployee = {
     id: `usr_${Date.now()}`,
+    employeeId: employeeId || generatedId,
     email: cleanEmail,
-    name: name.trim(),
-    role: role || 'Employee',
+    name: employeeName.trim(),
+    fullName: employeeName.trim(),
+    phone: phone || '+1 (555) 019-0000',
     department: department || 'Operations',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+    designation: designation || 'Staff Associate',
+    role: role || 'Employee',
+    securityClearance: securityClearance || 'Level 1',
+    dateOfJoining: dateOfJoining || new Date().toISOString().split('T')[0],
+    status: status || 'Active',
+    emailVerified: false, // Requires OTP email verification
+    createdBy: requesterRole || 'Admin System',
+    avatar: profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
   };
 
   initialUsers.unshift(newEmployee);
 
+  // Trigger 6-digit verification code to employee email
+  try {
+    const otpCode = otpService.generateOTP(cleanEmail);
+    await emailService.sendOTPEmail({ to: cleanEmail, otpCode });
+  } catch (err) {
+    console.warn('[AuthRoutes] Non-fatal: OTP dispatch error during onboarding:', err.message);
+  }
+
   loggerService.logAudit(
     'EMPLOYEE_ONBOARDED', 
     newEmployee, 
-    `HR/Admin added new employee '${newEmployee.name}' with role '${newEmployee.role}' in '${newEmployee.department}'.`
+    `Admin/HR created employee '${newEmployee.name}' (${newEmployee.employeeId}) with ${newEmployee.securityClearance} in '${newEmployee.department}'.`
   );
 
   res.json({
     success: true,
-    message: `Employee '${newEmployee.name}' successfully added to company directory.`,
+    message: `Employee '${newEmployee.name}' (${newEmployee.employeeId}) successfully onboarded. Verification email dispatched to ${cleanEmail}.`,
     user: newEmployee,
     users: initialUsers
   });

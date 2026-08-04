@@ -1,42 +1,87 @@
 export const initialUsers = [
   {
     id: 'usr_admin',
+    employeeId: 'EMP001',
     email: 'admin@enterprise.com',
-    name: 'Sarah Connor (System Admin)',
+    name: 'Sarah Connor',
+    fullName: 'Sarah Connor',
     role: 'Admin',
     department: 'Executive Management',
+    designation: 'Chief Technology Officer (CTO)',
+    phone: '+1 (555) 019-2831',
+    securityClearance: 'Level 4', // Level 4 = Executive-Only
+    dateOfJoining: '2022-01-15',
+    status: 'Active', // Active, On Leave, Suspended, Resigned
+    emailVerified: true,
+    createdBy: 'System Provisioning',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
   },
   {
     id: 'usr_hr',
+    employeeId: 'EMP002',
     email: 'hr.manager@enterprise.com',
-    name: 'Elena Rostova (HR Lead)',
+    name: 'Elena Rostova',
+    fullName: 'Elena Rostova',
     role: 'HR Manager',
     department: 'Human Resources',
+    designation: 'Global HR Lead',
+    phone: '+1 (555) 014-9281',
+    securityClearance: 'Level 3', // Level 3 = Confidential Management
+    dateOfJoining: '2023-03-01',
+    status: 'Active',
+    emailVerified: true,
+    createdBy: 'EMP001',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
   },
   {
     id: 'usr_finance',
+    employeeId: 'EMP003',
     email: 'finance.lead@enterprise.com',
-    name: 'Marcus Vance (Finance Director)',
+    name: 'Marcus Vance',
+    fullName: 'Marcus Vance',
     role: 'Finance',
     department: 'Finance & Payroll',
+    designation: 'Finance Director',
+    phone: '+1 (555) 017-3849',
+    securityClearance: 'Level 3',
+    dateOfJoining: '2023-08-15',
+    status: 'Active',
+    emailVerified: true,
+    createdBy: 'EMP001',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
   },
   {
     id: 'usr_employee',
+    employeeId: 'EMP004',
     email: 'dev.john@enterprise.com',
-    name: 'John Doe (Software Engineer)',
+    name: 'John Doe',
+    fullName: 'John Doe',
     role: 'Employee',
     department: 'Engineering',
+    designation: 'Senior Software Engineer',
+    phone: '+1 (555) 012-4829',
+    securityClearance: 'Level 1', // Level 1 = Public/Standard company docs
+    dateOfJoining: '2024-02-10',
+    status: 'Active',
+    emailVerified: true,
+    createdBy: 'EMP002',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
   },
   {
-    id: 'usr_shavali',
-    email: 'shavali@enterprise.com',
-    name: 'Shavali (Software Engineer)',
+    id: 'usr_suspended',
+    employeeId: 'EMP005',
+    email: 'former.emp@enterprise.com',
+    name: 'Alex Mercer (Suspended)',
+    fullName: 'Alex Mercer',
     role: 'Employee',
-    department: 'Engineering Division',
+    department: 'Operations',
+    designation: 'Operations Specialist',
+    phone: '+1 (555) 018-9921',
+    securityClearance: 'Level 1',
+    dateOfJoining: '2024-05-01',
+    status: 'Suspended', // Login MUST be blocked
+    emailVerified: true,
+    createdBy: 'EMP002',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
   }
 ];
@@ -46,7 +91,9 @@ export const initialDocuments = [
     id: 'doc_hr_leave_2026',
     title: 'Enterprise Annual Leave & Paid Time Off (PTO) Policy 2026',
     category: 'HR Policy',
-    accessRole: 'Public', // All employees can read
+    accessRole: 'Public',
+    clearanceRequired: 'Level 1', // Public Level 1
+    department: 'All Departments',
     author: 'Elena Rostova',
     updatedAt: '2026-01-15',
     summary: 'Comprehensive policy detailing paid vacation, sick leave entitlements, parental leave, and approval workflows.',
@@ -69,6 +116,8 @@ Maternity leave is granted up to 16 fully paid weeks. Paternity / Secondary Care
     title: 'New Hire Employee Onboarding & Workplace Setup Manual',
     category: 'Onboarding',
     accessRole: 'Public',
+    clearanceRequired: 'Level 1',
+    department: 'All Departments',
     author: 'HR Operations',
     updatedAt: '2026-02-01',
     summary: 'Step-by-step onboarding guide for newly hired personnel, IT equipment issuance, and week-1 orientation checklist.',
@@ -92,6 +141,8 @@ All employees are provided a hardware stipend of $500 for ergonomic office equip
     title: 'Global Cybersecurity & Information Protection Guidelines',
     category: 'IT Security',
     accessRole: 'Public',
+    clearanceRequired: 'Level 2', // Level 2 Department Security
+    department: 'IT Security & Engineering',
     author: 'Chief Information Security Officer',
     updatedAt: '2026-03-10',
     summary: 'Rules on password safety, remote access via VPN, phishing prevention, and data security standards.',
@@ -108,11 +159,13 @@ Any suspicious incoming emails or potential security breaches must be immediatel
     id: 'doc_exec_comp_confidential',
     title: 'Q1 2026 Executive Compensation & Performance Incentive Structure',
     category: 'Executive Finance',
-    accessRole: 'Executive-Only', // Restricted to Admin & HR Manager & Finance
+    accessRole: 'Executive-Only',
+    clearanceRequired: 'Level 4', // Confidential Level 4 Executive Only
+    department: 'Executive Management',
     author: 'Board of Directors & Compensation Committee',
     updatedAt: '2026-04-05',
     summary: 'CONFIDENTIAL: Salary benchmark bands, executive bonus multipliers, stock option vesting schedules for senior leadership.',
-    content: `[CONFIDENTIAL - RESTRICTED ACCESS]
+    content: `[CONFIDENTIAL - RESTRICTED ACCESS LEVEL 4 EXECUTIVE ONLY]
 
 SECTION 1: EXECUTIVE SALARY BANDS (LEVEL L7 - L9)
 - L7 (Director): Base Range $210,000 - $275,000 | Target Bonus: 30% | Equity Grant: 15,000 RSUs (4-year vesting, 1-year cliff).
@@ -126,11 +179,13 @@ Bonus payouts are tied to 60% corporate ARR growth and 40% department KPI milest
     id: 'doc_hr_disciplinary_confidential',
     title: 'Internal Workplace Conduct & Investigation Standard Operating Procedure',
     category: 'HR Confidential',
-    accessRole: 'HR-Only', // Restricted to Admin & HR Manager
+    accessRole: 'HR-Only',
+    clearanceRequired: 'Level 3', // Confidential Level 3 Management
+    department: 'Human Resources',
     author: 'Elena Rostova',
     updatedAt: '2026-05-12',
     summary: 'CONFIDENTIAL: Procedures for handling employee grievances, formal warnings, performance improvement plans (PIP), and severance protocols.',
-    content: `[CONFIDENTIAL - HR INTERNAL USE ONLY]
+    content: `[CONFIDENTIAL - HR INTERNAL USE ONLY LEVEL 3]
 
 SECTION 1: GRIEVANCE HANDLING & INVESTIGATION PROTOCOL
 All employee complaints regarding discrimination, harassment, or policy violations must be logged in the HR Secure Vault within 24 hours of receipt. An impartial investigator from HR Legal must be assigned within 48 hours.

@@ -97,31 +97,50 @@ class VectorStoreService {
   }
 
   /**
-   * Role-based access permission check
+  /**
+   * Role & Security Clearance access permission check
+   * Level 1 = Public, Level 2 = Department, Level 3 = Management, Level 4 = Executive
    */
-  isRoleAuthorized(userRole, documentAccessRole) {
-    if (userRole === 'Admin') return true;
-    if (documentAccessRole === 'Public') return true;
+  isRoleAuthorized(userRole, document, securityClearance = 'Level 1') {
+    if (userRole === 'Admin' || securityClearance === 'Level 4') return true;
+
+    const clearanceLevelMap = {
+      'Level 1': 1,
+      'Level 2': 2,
+      'Level 3': 3,
+      'Level 4': 4
+    };
+
+    const userLevel = clearanceLevelMap[securityClearance] || 1;
+    const docLevel = clearanceLevelMap[document.clearanceRequired || 'Level 1'] || 1;
+
+    // Strict Enforcement: User security clearance level MUST be >= document required clearance level
+    if (userLevel < docLevel) {
+      return false;
+    }
+
+    const docAccessRole = document.accessRole || 'Public';
+    if (docAccessRole === 'Public') return true;
 
     if (userRole === 'HR Manager') {
-      return documentAccessRole === 'Public' || documentAccessRole === 'HR-Only' || documentAccessRole === 'Executive-Only';
+      return docAccessRole === 'Public' || docAccessRole === 'HR-Only' || docAccessRole === 'Executive-Only';
     }
 
     if (userRole === 'Finance') {
-      return documentAccessRole === 'Public' || documentAccessRole === 'Executive-Only';
+      return docAccessRole === 'Public' || docAccessRole === 'Executive-Only';
     }
 
     if (userRole === 'Employee') {
-      return documentAccessRole === 'Public';
+      return docAccessRole === 'Public';
     }
 
     return false;
   }
 
   /**
-   * Perform semantic RAG search with role security filtering
+   * Perform semantic RAG search with role & 4-tier security clearance filtering
    */
-  async search({ query, userRole = 'Employee', topK = 3 }) {
+  async search({ query, userRole = 'Employee', securityClearance = 'Level 1', topK = 3 }) {
     const queryTokens = this.tokenize(query);
     const vocabArray = Array.from(this.vocabulary);
 
@@ -141,7 +160,7 @@ class VectorStoreService {
 
     this.vectorChunks.forEach(chunk => {
       // Security Guard check
-      const authorized = this.isRoleAuthorized(userRole, chunk.accessRole);
+      const authorized = this.isRoleAuthorized(userRole, chunk, securityClearance);
       if (!authorized) {
         deniedCount.count++;
         return;

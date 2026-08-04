@@ -5,11 +5,11 @@ class RAGEngineService {
   /**
    * Main query handler for RAG engine
    */
-  async processQuery({ query, userRole = 'Employee', userId = 'anonymous', userName = 'Employee' }) {
+  async processQuery({ query, userRole = 'Employee', securityClearance = 'Level 1', userId = 'anonymous', userName = 'Employee' }) {
     const startTime = Date.now();
 
-    // 1. Vector Search with RBAC filtering
-    const searchResult = await vectorStore.search({ query, userRole, topK: 3 });
+    // 1. Vector Search with RBAC & 4-Tier Security Clearance filtering
+    const searchResult = await vectorStore.search({ query, userRole, securityClearance, topK: 3 });
     const chunks = searchResult.results;
 
     let responseAnswer = '';
