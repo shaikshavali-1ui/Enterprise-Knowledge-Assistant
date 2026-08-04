@@ -9,13 +9,20 @@ import {
   Database,
   Lock,
   CheckCircle,
-  Users
+  Users,
+  Bell,
+  Megaphone,
+  Activity,
+  Cpu,
+  Calendar,
+  Sparkles,
+  Layers
 } from 'lucide-react';
 
 export default function Dashboard({ documents, vectorStats, emailLogs, conversationLogs, activeUser, setCurrentTab, setPresetQuery }) {
   const totalDocs = documents.length || 5;
-  const totalChunks = vectorStats?.totalChunks || 18;
-  const totalQueries = conversationLogs.length || 12;
+  const totalChunks = vectorStats?.totalChunks || 17;
+  const totalQueries = conversationLogs.length || 18;
   const totalEmails = emailLogs.length || 8;
 
   const quickQueries = [
@@ -25,88 +32,169 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
     { label: "What are Q1 executive compensation bands & RSUs?", category: "Restricted Finance" }
   ];
 
+  const companyAnnouncements = [
+    { id: 1, title: 'Independence Day Holiday Notice', date: '15 August 2026', type: 'HR Alert', desc: 'All corporate offices will remain closed. Critical IT support remains on call.' },
+    { id: 2, title: 'Mandatory Cybersecurity Refresh Training', date: 'Next Friday', type: 'Security', desc: 'Level 1 to Level 4 security clearance holders must complete MFA & phishing modules.' },
+    { id: 3, title: 'Quarterly HR & Operations All-Hands', date: 'Tomorrow at 10:00 AM', type: 'Meeting', desc: 'Reviewing Q3 employee onboarding and 6-digit OTP verification system adoption.' }
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-900/80 border border-indigo-500/30 glass-panel shadow-glow-indigo flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Enterprise Knowledge Assistant
-            </span>
-            <span className="text-xs text-slate-400">• Security Filter: Active</span>
-          </div>
-          <h2 className="text-2xl font-bold text-white mt-2">
-            Welcome back, {activeUser?.name}
-          </h2>
-          <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-            Query corporate policies, retrieve verified document context, and dispatch automated emails via SMTP.
-          </p>
-        </div>
-        <button
-          onClick={() => setCurrentTab('chat')}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium text-sm hover:opacity-90 transition-all flex items-center space-x-2 shadow-lg shrink-0"
-        >
-          <Zap className="w-4 h-4" />
-          <span>Launch RAG Assistant</span>
-        </button>
-      </div>
-
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Indexed Documents */}
-        <div className="p-5 rounded-2xl glass-panel glass-panel-hover flex items-center justify-between">
+      {/* 1. EMPLOYEE PROFILE HERO CARD */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 glass-panel shadow-glow-indigo flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="flex items-start space-x-4">
+          <img
+            src={activeUser?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+            alt={activeUser?.name}
+            className="w-16 h-16 rounded-2xl border-2 border-indigo-500/50 object-cover shadow-lg shrink-0 mt-1"
+          />
           <div>
-            <p className="text-xs font-medium text-slate-400">Indexed Knowledge Base</p>
-            <h3 className="text-2xl font-bold text-white mt-1">{totalDocs} Documents</h3>
-            <p className="text-xs text-indigo-400 mt-1 font-mono">{totalChunks} Vector Chunks</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-            <Database className="w-6 h-6" />
-          </div>
-        </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                Enterprise Personnel Dashboard
+              </span>
+              <span className="text-xs font-mono text-emerald-400 flex items-center space-x-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Active</span>
+              </span>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-white mt-1">
+              👋 Welcome, {activeUser?.fullName || activeUser?.name || 'Shaik Shavali'}
+            </h2>
 
-        {/* Card 2: RAG Queries Processed */}
-        <div className="p-5 rounded-2xl glass-panel glass-panel-hover flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-400">RAG Queries Handled</p>
-            <h3 className="text-2xl font-bold text-white mt-1">{totalQueries} Conversations</h3>
-            <p className="text-xs text-emerald-400 mt-1 font-mono">Avg Latency ~120ms</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-            <Search className="w-6 h-6" />
+            {/* Employee Badges Detail */}
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300 font-mono">
+                Employee ID: <strong className="text-indigo-300">{activeUser?.employeeId || 'EMP001'}</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                Department: <strong className="text-slate-200">{activeUser?.department || 'Executive Management'}</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
+                Designation: <strong className="text-slate-200">{activeUser?.designation || 'System Administrator & CTO'}</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
+                Role: <strong>{activeUser?.role || 'Admin'}</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                Clearance: <strong>{activeUser?.securityClearance || 'Level 4'}</strong>
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Card 3: Emails Sent via SMTP */}
-        <div className="p-5 rounded-2xl glass-panel glass-panel-hover flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-400">Automated Emails Sent</p>
-            <h3 className="text-2xl font-bold text-white mt-1">{totalEmails} Emails</h3>
-            <p className="text-xs text-sky-400 mt-1 font-mono">100% SMTP Deliverability</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-            <Mail className="w-6 h-6" />
-          </div>
-        </div>
-
-        {/* Card 4: Active Role Guard */}
-        <div className="p-5 rounded-2xl glass-panel glass-panel-hover flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-400">Security Clearance</p>
-            <h3 className="text-2xl font-bold text-amber-300 mt-1">{activeUser?.role}</h3>
-            <p className="text-xs text-slate-400 mt-1 font-mono">RBAC Guard Active</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
+        {/* Quick Launch Buttons */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={() => setCurrentTab('ai-workspace')}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-xs shadow-glow-indigo flex items-center space-x-2"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>AI Workspace</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab('chat')}
+            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-medium text-xs flex items-center space-x-2"
+          >
+            <Zap className="w-4 h-4 text-indigo-400" />
+            <span>Launch RAG Chat</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
+      {/* 2. REAL-TIME STAT COUNTERS GRID */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">Today's Alerts</p>
+          <h4 className="text-xl font-bold text-indigo-300 mt-1">5 Notifs</h4>
+        </div>
+
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">Unread Documents</p>
+          <h4 className="text-xl font-bold text-amber-300 mt-1">3 Policies</h4>
+        </div>
+
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">Recent RAG Queries</p>
+          <h4 className="text-xl font-bold text-emerald-300 mt-1">{totalQueries} Queries</h4>
+        </div>
+
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">Knowledge Chunks</p>
+          <h4 className="text-xl font-bold text-purple-300 mt-1">{totalChunks} Chunks</h4>
+        </div>
+
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">SMTP Emails Sent</p>
+          <h4 className="text-xl font-bold text-sky-300 mt-1">{totalEmails} Sent</h4>
+        </div>
+
+        <div className="p-4 rounded-xl glass-panel border border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">System Storage</p>
+          <h4 className="text-xl font-bold text-slate-200 mt-1 font-mono">1.4 MB</h4>
+        </div>
+      </div>
+
+      {/* 3. SYSTEM HEALTH INDICATOR BAR */}
+      <div className="p-3.5 rounded-xl glass-panel border border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center space-x-2 text-slate-300 font-semibold">
+          <Activity className="w-4 h-4 text-emerald-400" />
+          <span>System Health Telemetry:</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+          <span className="flex items-center space-x-1.5 text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Pinecone Connected</span>
+          </span>
+          <span className="flex items-center space-x-1.5 text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Gemini AI Online</span>
+          </span>
+          <span className="flex items-center space-x-1.5 text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>SMTP Connected</span>
+          </span>
+          <span className="flex items-center space-x-1.5 text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Server Running</span>
+          </span>
+          <span className="flex items-center space-x-1.5 text-emerald-400 font-bold">
+            <span>🟢 API Healthy</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 4. MAIN CONTENT GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Quick Query Starter & Document Overview */}
+        {/* Left Column: Quick Query Starter & Announcements */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Company Announcements Feed */}
+          <div className="p-6 rounded-2xl glass-panel space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-white flex items-center space-x-2">
+                <Megaphone className="w-4 h-4 text-amber-400" />
+                <span>Company News & Announcements</span>
+              </h3>
+              <span className="text-xs text-slate-400 font-mono">3 Active Bulletins</span>
+            </div>
+
+            <div className="space-y-3">
+              {companyAnnouncements.map(item => (
+                <div key={item.id} className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">{item.title}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      {item.type} • {item.date}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Quick RAG Starter Card */}
           <div className="p-6 rounded-2xl glass-panel space-y-4">
             <div className="flex items-center justify-between">
@@ -143,7 +231,7 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-white flex items-center space-x-2">
                 <FileText className="w-4 h-4 text-emerald-400" />
-                <span>Indexed Nexus Knowledge Docs</span>
+                <span>Indexed Enterprise Knowledge Docs</span>
               </h3>
               <button
                 onClick={() => setCurrentTab('documents')}
@@ -171,13 +259,13 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
                   </div>
                   <div className="text-right shrink-0">
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
-                      doc.accessRole === 'Public'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                        : doc.accessRole === 'HR-Only'
+                      doc.clearanceRequired === 'Level 4'
+                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                        : doc.clearanceRequired === 'Level 3'
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                        : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                     }`}>
-                      {doc.accessRole}
+                      {doc.clearanceRequired || 'Level 1'}
                     </span>
                   </div>
                 </div>
@@ -186,34 +274,34 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
           </div>
         </div>
 
-        {/* Right Column: Security Access Matrix & Automation Hub */}
+        {/* Right Column: Security Clearance & Email Automation */}
         <div className="space-y-6">
-          {/* RBAC Security Policy Matrix */}
+          {/* Security Clearance 4-Tier Access Matrix */}
           <div className="p-6 rounded-2xl glass-panel space-y-4">
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <Lock className="w-4 h-4 text-amber-400" />
-              <span>Role Security Access Matrix</span>
+              <span>4-Tier Clearance Access Control</span>
             </h3>
             <p className="text-xs text-slate-400">
-              RAG vector search enforces real-time document filtering based on active employee role.
+              RAG engine filters documents so queries retrieve passages matching user clearance level.
             </p>
 
-            <div className="space-y-2.5 text-xs">
+            <div className="space-y-2 text-xs">
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center">
-                <span className="font-semibold text-slate-200">Employee</span>
-                <span className="text-slate-400">Public Policies Only</span>
+                <span className="font-semibold text-slate-200">Level 1 - Public</span>
+                <span className="text-slate-400">Company PTO & Setup</span>
               </div>
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center">
-                <span className="font-semibold text-amber-300">HR Manager</span>
-                <span className="text-amber-400">Public + HR Confidential</span>
+                <span className="font-semibold text-indigo-300">Level 2 - Department</span>
+                <span className="text-indigo-400">IT Security Guidelines</span>
               </div>
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center">
-                <span className="font-semibold text-emerald-300">Finance</span>
-                <span className="text-emerald-400">Public + Executive Comp</span>
+                <span className="font-semibold text-amber-300">Level 3 - Management</span>
+                <span className="text-amber-400">Confidential HR SOPs</span>
               </div>
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center">
-                <span className="font-semibold text-rose-300">Admin</span>
-                <span className="text-rose-400">Full Unrestricted Access</span>
+                <span className="font-semibold text-rose-300">Level 4 - Executive</span>
+                <span className="text-rose-400">Exec Compensation & RSUs</span>
               </div>
             </div>
 
@@ -221,25 +309,25 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
               onClick={() => setCurrentTab('rbac')}
               className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors text-center"
             >
-              Test Persona Switching
+              Open Employee Provisioning
             </button>
           </div>
 
-          {/* Email Automation Quick Status */}
+          {/* Email Automation Dispatcher */}
           <div className="p-6 rounded-2xl glass-panel space-y-3">
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <Mail className="w-4 h-4 text-sky-400" />
-              <span>SMTP Dispatcher</span>
+              <span>SMTP Email Automation</span>
             </h3>
             <p className="text-xs text-slate-400">
-              Generate AI email drafts directly from RAG search context and dispatch to employees.
+              Dispatches 6-digit OTP codes and RAG email notifications via Nodemailer SMTP.
             </p>
 
             <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center space-x-3">
               <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
               <div>
-                <p className="text-xs font-medium text-slate-200">Nodemailer SMTP Active</p>
-                <p className="text-[10px] text-slate-400">Ethereal / Custom Enterprise SMTP Transport</p>
+                <p className="text-xs font-medium text-slate-200">Gmail SMTP Active</p>
+                <p className="text-[10px] text-slate-400">Verified Gmail Credentials</p>
               </div>
             </div>
 

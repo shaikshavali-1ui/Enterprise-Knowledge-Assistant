@@ -205,9 +205,53 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
             <strong className="text-white">Security Clearance Testing Mode:</strong> Click <strong>"Simulate Persona"</strong> to verify employee credentials (Email & Password) and simulate how RAG AI answers adapt to that user's security clearance.
           </span>
         </div>
-        <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
-          Current Active: {activeUser?.name} ({activeUser?.role})
-        </span>
+      </div>
+      {/* Department Management Panel */}
+      <div className="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-white flex items-center space-x-2">
+            <Building2 className="w-5 h-5 text-indigo-400" />
+            <span>Organization Department Management</span>
+          </h3>
+          <span className="text-xs font-mono text-slate-400">7 Active Departments</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 text-xs font-mono">
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-indigo-300">Executive</div>
+            <div className="text-[10px] text-slate-400">1 Admin</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-emerald-300">Engineering</div>
+            <div className="text-[10px] text-slate-400">Level 1-2</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-amber-300">HR Operations</div>
+            <div className="text-[10px] text-slate-400">Level 3</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-sky-300">Finance</div>
+            <div className="text-[10px] text-slate-400">Level 3</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-purple-300">Operations</div>
+            <div className="text-[10px] text-slate-400">Level 1</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-rose-300">Marketing</div>
+            <div className="text-[10px] text-slate-400">Level 1</div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center space-y-1">
+            <div className="font-bold text-cyan-300">Legal</div>
+            <div className="text-[10px] text-slate-400">Level 3</div>
+          </div>
+        </div>
       </div>
 
       {/* User Persona Selector Cards */}

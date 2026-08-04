@@ -8,6 +8,8 @@ import EmailHub from './components/EmailHub';
 import RoleSimulator from './components/RoleSimulator';
 import AuditLogs from './components/AuditLogs';
 import LandingPage from './components/LandingPage';
+import AIWorkspace from './components/AIWorkspace';
+import Footer from './components/Footer';
 
 // Enterprise Knowledge Assistant - Core App Component
 export default function App() {
@@ -244,6 +246,14 @@ export default function App() {
             />
           )}
 
+          {currentTab === 'ai-workspace' && (
+            <AIWorkspace
+              documents={documents}
+              activeUser={activeUser}
+              onTriggerEmailDraft={handleTriggerEmailDraft}
+            />
+          )}
+
           {currentTab === 'chat' && (
             <ChatInterface
               activeUser={activeUser}
@@ -288,6 +298,9 @@ export default function App() {
               activeUser={activeUser}
             />
           )}
+
+          {/* Footer Banner */}
+          <Footer />
         </main>
       </div>
     </div>

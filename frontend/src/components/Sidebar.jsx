@@ -16,6 +16,7 @@ export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
   const navItems = [
     { id: 'landing', label: 'Landing Page', icon: Home, badge: 'Home' },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
+    { id: 'ai-workspace', label: 'AI Workspace', icon: Sparkles, badge: 'v2.0' },
     { id: 'chat', label: 'Knowledge Chat (RAG)', icon: MessageSquare, badge: 'AI' },
     { id: 'documents', label: 'Document Base', icon: FileText, badge: 'Vector' },
     { id: 'email', label: 'Email Automation', icon: Mail, badge: 'SMTP' },
