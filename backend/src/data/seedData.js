@@ -1,88 +1,20 @@
 export const initialUsers = [
   {
-    id: 'usr_admin',
+    id: 'usr_admin_shaik',
     employeeId: 'EMP001',
-    email: 'admin@enterprise.com',
-    name: 'Sarah Connor',
-    fullName: 'Sarah Connor',
+    email: 'shaikshavali05335@gmail.com',
+    name: 'Shaik Shavali',
+    fullName: 'Shaik Shavali',
     role: 'Admin',
     department: 'Executive Management',
-    designation: 'Chief Technology Officer (CTO)',
-    phone: '+1 (555) 019-2831',
-    securityClearance: 'Level 4', // Level 4 = Executive-Only
-    dateOfJoining: '2022-01-15',
-    status: 'Active', // Active, On Leave, Suspended, Resigned
-    emailVerified: true,
-    createdBy: 'System Provisioning',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'usr_hr',
-    employeeId: 'EMP002',
-    email: 'hr.manager@enterprise.com',
-    name: 'Elena Rostova',
-    fullName: 'Elena Rostova',
-    role: 'HR Manager',
-    department: 'Human Resources',
-    designation: 'Global HR Lead',
-    phone: '+1 (555) 014-9281',
-    securityClearance: 'Level 3', // Level 3 = Confidential Management
-    dateOfJoining: '2023-03-01',
+    designation: 'System Administrator & CTO',
+    phone: '+91 9876543210',
+    securityClearance: 'Level 4', // Level 4 = Executive Full Access
+    dateOfJoining: '2025-01-01',
     status: 'Active',
     emailVerified: true,
-    createdBy: 'EMP001',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'usr_finance',
-    employeeId: 'EMP003',
-    email: 'finance.lead@enterprise.com',
-    name: 'Marcus Vance',
-    fullName: 'Marcus Vance',
-    role: 'Finance',
-    department: 'Finance & Payroll',
-    designation: 'Finance Director',
-    phone: '+1 (555) 017-3849',
-    securityClearance: 'Level 3',
-    dateOfJoining: '2023-08-15',
-    status: 'Active',
-    emailVerified: true,
-    createdBy: 'EMP001',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'usr_employee',
-    employeeId: 'EMP004',
-    email: 'dev.john@enterprise.com',
-    name: 'John Doe',
-    fullName: 'John Doe',
-    role: 'Employee',
-    department: 'Engineering',
-    designation: 'Senior Software Engineer',
-    phone: '+1 (555) 012-4829',
-    securityClearance: 'Level 1', // Level 1 = Public/Standard company docs
-    dateOfJoining: '2024-02-10',
-    status: 'Active',
-    emailVerified: true,
-    createdBy: 'EMP002',
+    createdBy: 'System Root',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'usr_suspended',
-    employeeId: 'EMP005',
-    email: 'former.emp@enterprise.com',
-    name: 'Alex Mercer (Suspended)',
-    fullName: 'Alex Mercer',
-    role: 'Employee',
-    department: 'Operations',
-    designation: 'Operations Specialist',
-    phone: '+1 (555) 018-9921',
-    securityClearance: 'Level 1',
-    dateOfJoining: '2024-05-01',
-    status: 'Suspended', // Login MUST be blocked
-    emailVerified: true,
-    createdBy: 'EMP002',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
   }
 ];
 

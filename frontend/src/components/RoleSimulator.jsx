@@ -31,7 +31,7 @@ export default function RoleSimulator({ users, activeUser, onSwitchUser, documen
 
   // New Employee Onboarding state (Full 11-Field Schema)
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newEmpId, setNewEmpId] = useState('EMP006');
+  const [newEmpId, setNewEmpId] = useState('EMP002');
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('+1 (555) 019-3821');

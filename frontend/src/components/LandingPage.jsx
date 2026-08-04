@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage({ onLoginSuccess }) {
-  const [email, setEmail] = useState('dev.john@enterprise.com');
+  const [email, setEmail] = useState('shaikshavali05335@gmail.com');
   const [password, setPassword] = useState('••••••••••••');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -44,12 +44,9 @@ export default function LandingPage({ onLoginSuccess }) {
   const [otpInput, setOtpInput] = useState('');
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
 
-  // Sample predefined employee personas for quick testing
+  // Primary System Administrator
   const registeredEmployees = [
-    { id: 'usr_employee', email: 'dev.john@enterprise.com', name: 'John Doe', role: 'Software Engineer', dept: 'Engineering' },
-    { id: 'usr_hr', email: 'hr.manager@enterprise.com', name: 'Elena Rostova', role: 'HR Lead', dept: 'Human Resources' },
-    { id: 'usr_finance', email: 'finance.lead@enterprise.com', name: 'Marcus Vance', role: 'Finance Director', dept: 'Finance & Payroll' },
-    { id: 'usr_admin', email: 'admin@enterprise.com', name: 'Sarah Connor', role: 'System Admin', dept: 'Executive' }
+    { id: 'usr_admin_shaik', email: 'shaikshavali05335@gmail.com', name: 'Shaik Shavali', role: 'Admin', dept: 'Executive Management' }
   ];
 
   const handleRequestOTP = async (e, customEmail = null) => {
