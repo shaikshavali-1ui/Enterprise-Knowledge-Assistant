@@ -14,7 +14,6 @@ export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
   const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin';
 
   const navItems = [
-    { id: 'landing', label: 'Landing Page', icon: Home, badge: 'Home' },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
     { id: 'ai-workspace', label: 'AI Workspace', icon: Sparkles, badge: 'v2.0' },
     { id: 'chat', label: 'Knowledge Chat (RAG)', icon: MessageSquare, badge: 'AI' },

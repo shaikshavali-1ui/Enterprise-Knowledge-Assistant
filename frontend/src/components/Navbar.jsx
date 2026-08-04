@@ -44,7 +44,7 @@ export default function Navbar({ activeUser, vectorStats, onSelectTab }) {
   return (
     <header className="h-16 border-b border-slate-800/80 glass-panel sticky top-0 z-40 px-6 flex items-center justify-between">
       {/* Brand & v2.0 Tag */}
-      <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectTab && onSelectTab('landing')}>
+      <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectTab && onSelectTab('dashboard')}>
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="font-bold text-lg bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
@@ -147,8 +147,8 @@ export default function Navbar({ activeUser, vectorStats, onSelectTab }) {
           </div>
 
           <button
-            onClick={() => onSelectTab && onSelectTab('landing')}
-            title="Log out & return to Landing Page"
+            onClick={() => onSelectTab && onSelectTab('dashboard')}
+            title="Return to Dashboard"
             className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 hover:text-rose-300 text-slate-400 transition-colors flex items-center space-x-1.5 text-xs font-medium ml-1"
           >
             <LogOut className="w-3.5 h-3.5" />

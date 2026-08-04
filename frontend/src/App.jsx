@@ -56,7 +56,7 @@ export default function App() {
     }
   ];
 
-  const [currentTab, setCurrentTab] = useState('landing');
+  const [currentTab, setCurrentTab] = useState('dashboard');
   const [users, setUsers] = useState(initialDefaultUsers);
   const [activeUser, setActiveUser] = useState(initialDefaultUsers[3]);
   const [documents, setDocuments] = useState([]);
@@ -205,14 +205,6 @@ export default function App() {
     setCurrentTab('dashboard');
     fetchAuditLogs();
   };
-
-  if (currentTab === 'landing') {
-    return (
-      <LandingPage 
-        onLoginSuccess={handleLoginSuccess} 
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans">
