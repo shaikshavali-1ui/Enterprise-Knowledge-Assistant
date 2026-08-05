@@ -243,6 +243,7 @@ export default function App() {
               activeUser={activeUser}
               setCurrentTab={setCurrentTab}
               setPresetQuery={setPresetQuery}
+              onTriggerEmailDraft={handleTriggerEmailDraft}
             />
           )}
 

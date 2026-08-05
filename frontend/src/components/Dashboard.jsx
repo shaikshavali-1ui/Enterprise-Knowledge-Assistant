@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   FileText, 
   Search, 
@@ -16,10 +16,13 @@ import {
   Cpu,
   Calendar,
   Sparkles,
-  Layers
+  Layers,
+  Plus,
+  X,
+  Send
 } from 'lucide-react';
 
-export default function Dashboard({ documents, vectorStats, emailLogs, conversationLogs, activeUser, setCurrentTab, setPresetQuery }) {
+export default function Dashboard({ documents, vectorStats, emailLogs, conversationLogs, activeUser, setCurrentTab, setPresetQuery, onTriggerEmailDraft }) {
   const totalDocs = documents.length || 5;
   const totalChunks = vectorStats?.totalChunks || 17;
   const totalQueries = conversationLogs.length || 18;
@@ -32,11 +35,44 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
     { label: "What are Q1 executive compensation bands & RSUs?", category: "Restricted Finance" }
   ];
 
-  const companyAnnouncements = [
+  // Announcements State
+  const [announcementsList, setAnnouncementsList] = useState([
     { id: 1, title: 'Independence Day Holiday Notice', date: '15 August 2026', type: 'HR Alert', desc: 'All corporate offices will remain closed. Critical IT support remains on call.' },
     { id: 2, title: 'Mandatory Cybersecurity Refresh Training', date: 'Next Friday', type: 'Security', desc: 'Level 1 to Level 4 security clearance holders must complete MFA & phishing modules.' },
     { id: 3, title: 'Quarterly HR & Operations All-Hands', date: 'Tomorrow at 10:00 AM', type: 'Meeting', desc: 'Reviewing Q3 employee onboarding and 6-digit OTP verification system adoption.' }
-  ];
+  ]);
+
+  // Modal State for Admin Announcement Creation
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('Q3 Policy Update Announcement');
+  const [newType, setNewType] = useState('Security Alert');
+  const [newDesc, setNewDesc] = useState('Updated Enterprise Annual Leave & PTO Policy 2026 takes effect next month. All personnel are required to review section 2 for approval workflows.');
+
+  const canPublish = activeUser?.role === 'Admin' || activeUser?.role === 'HR Manager';
+
+  const handlePublishAnnouncement = (e) => {
+    e.preventDefault();
+    const item = {
+      id: Date.now(),
+      title: newTitle.trim(),
+      date: 'Today',
+      type: newType,
+      desc: newDesc.trim()
+    };
+
+    setAnnouncementsList([item, ...announcementsList]);
+    setShowCreateModal(false);
+
+    // Automatically transfer to Email Automation (Announcements Mode) with pre-filled announcement text
+    if (onTriggerEmailDraft) {
+      onTriggerEmailDraft({
+        subject: newTitle.trim(),
+        body: newDesc.trim(),
+        recipientGroup: 'all-staff@enterprise.com',
+        categoryMode: 'ANNOUNCEMENT'
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -177,11 +213,22 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
                 <Megaphone className="w-4 h-4 text-amber-400" />
                 <span>Company News & Announcements</span>
               </h3>
-              <span className="text-xs text-slate-400 font-mono">3 Active Bulletins</span>
+
+              {canPublish ? (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium flex items-center space-x-1 shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Announcement</span>
+                </button>
+              ) : (
+                <span className="text-xs text-slate-400 font-mono">{announcementsList.length} Active Bulletins</span>
+              )}
             </div>
 
             <div className="space-y-3">
-              {companyAnnouncements.map(item => (
+              {announcementsList.map(item => (
                 <div key={item.id} className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-white">{item.title}</span>
@@ -340,6 +387,81 @@ export default function Dashboard({ documents, vectorStats, emailLogs, conversat
           </div>
         </div>
       </div>
+
+      {/* 📢 MODAL: CREATE & PUBLISH ANNOUNCEMENT */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md glass-panel rounded-2xl border border-amber-500/30 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                <Megaphone className="w-4 h-4 text-amber-400" />
+                <span>Create & Publish Company Announcement</span>
+              </h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePublishAnnouncement} className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold text-slate-300 block mb-1">Announcement Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl glass-input"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-300 block mb-1">Category Type</label>
+                <select
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl glass-input font-mono"
+                >
+                  <option value="Security Alert">Security Alert</option>
+                  <option value="HR Notice">HR Notice</option>
+                  <option value="Holiday Notice">Holiday Notice</option>
+                  <option value="Company Event">Company Event</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-300 block mb-1">Announcement Message Body *</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl glass-input font-mono"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium shadow-glow flex items-center space-x-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Publish & Open Email Dispatcher</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
