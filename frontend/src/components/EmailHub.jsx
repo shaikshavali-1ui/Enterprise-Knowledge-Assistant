@@ -192,7 +192,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
       </div>
 
       {/* CATEGORY SELECTOR TABS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Category 1: Announcements */}
         <button
           onClick={() => setActiveCategoryMode('ANNOUNCEMENT')}
@@ -235,19 +235,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
           <div className="text-[10px] text-slate-400 mt-0.5">Onboarding & credentials</div>
         </button>
 
-        {/* Category 4: OTP Verification */}
-        <button
-          onClick={() => setActiveCategoryMode('OTP')}
-          className={`p-3.5 rounded-xl border text-left transition-all ${
-            activeCategoryMode === 'OTP'
-              ? 'bg-rose-600/20 border-rose-500 text-white shadow-glow'
-              : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-          }`}
-        >
-          <KeyRound className="w-5 h-5 text-rose-400 mb-2" />
-          <div className="font-bold text-xs">🔐 OTP Security</div>
-          <div className="text-[10px] text-slate-400 mt-0.5">6-digit verification code</div>
-        </button>
+
 
         {/* Category 5: Custom AI Email */}
         <button
@@ -562,64 +550,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
             </form>
           )}
 
-          {/* CATEGORY 4: OTP SECURITY FORM */}
-          {activeCategoryMode === 'OTP' && (
-            <form onSubmit={handleDispatchEmail} className="space-y-4 text-xs">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                  <KeyRound className="w-4 h-4 text-rose-400" />
-                  <span>🔐 6-Digit OTP Security Setup</span>
-                </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  Verification
-                </span>
-              </div>
 
-              <div>
-                <label className="font-semibold text-slate-300 block mb-1">Employee Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  value={otpEmpEmail}
-                  onChange={(e) => setOtpEmpEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl glass-input font-mono"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Generated 6-Digit Code *</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl glass-input font-mono text-center font-bold text-rose-300 tracking-widest text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Verification Status</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={otpStatus}
-                    className="w-full px-3 py-2 rounded-xl glass-input font-mono text-emerald-400 font-bold"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSending}
-                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-medium shadow-glow flex items-center justify-center space-x-2"
-              >
-                <Send className="w-4 h-4" />
-                <span>Dispatch OTP Verification Email</span>
-              </button>
-            </form>
-          )}
 
           {/* CATEGORY 5: CUSTOM AI EMAIL FORM */}
           {activeCategoryMode === 'CUSTOM' && (
@@ -699,8 +630,7 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
                 <span className="text-indigo-300 font-bold">
                   {activeCategoryMode === 'ANNOUNCEMENT' ? announcementRecipientGroup :
                    activeCategoryMode === 'LEAVE' ? leaveEmpEmail :
-                   activeCategoryMode === 'ONBOARDING' ? onboardEmpEmail :
-                   activeCategoryMode === 'OTP' ? otpEmpEmail : customRecipient}
+                   activeCategoryMode === 'ONBOARDING' ? onboardEmpEmail : customRecipient}
                 </span>
               </div>
 
@@ -709,16 +639,14 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
                 <span className="text-slate-200 font-semibold truncate max-w-[240px]">
                   {activeCategoryMode === 'ANNOUNCEMENT' ? `[📢 ${announcementPriority.toUpperCase()}] ${announcementSubject}` :
                    activeCategoryMode === 'LEAVE' ? `[🏖 LEAVE ${leaveStatus}] ${leaveType}` :
-                   activeCategoryMode === 'ONBOARDING' ? `[👤 ONBOARDING] Welcome ${onboardEmpName}` :
-                   activeCategoryMode === 'OTP' ? `[🔐 OTP] Code ${otpCode}` : customSubject}
+                   activeCategoryMode === 'ONBOARDING' ? `[👤 ONBOARDING] Welcome ${onboardEmpName}` : customSubject}
                 </span>
               </div>
 
               <div className="text-slate-300 leading-relaxed whitespace-pre-wrap pt-1 text-[11px] max-h-48 overflow-y-auto">
                 {activeCategoryMode === 'ANNOUNCEMENT' ? announcementMessage :
                  activeCategoryMode === 'LEAVE' ? leaveMessage :
-                 activeCategoryMode === 'ONBOARDING' ? onboardMessage :
-                 activeCategoryMode === 'OTP' ? `Your verification code is ${otpCode}. Valid for 10 minutes.` : customMessage}
+                 activeCategoryMode === 'ONBOARDING' ? onboardMessage : customMessage}
               </div>
             </div>
           </div>
