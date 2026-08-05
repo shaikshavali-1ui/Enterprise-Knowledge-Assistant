@@ -147,8 +147,8 @@ export default function Navbar({ activeUser, vectorStats, onSelectTab }) {
           </div>
 
           <button
-            onClick={() => onSelectTab && onSelectTab('dashboard')}
-            title="Return to Dashboard"
+            onClick={() => onSelectTab && onSelectTab('landing')}
+            title="Log out & return to Landing Page"
             className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 hover:text-rose-300 text-slate-400 transition-colors flex items-center space-x-1.5 text-xs font-medium ml-1"
           >
             <LogOut className="w-3.5 h-3.5" />
