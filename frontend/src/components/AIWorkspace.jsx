@@ -437,8 +437,8 @@ DOCUMENT B: ${docB?.title || 'Policy B'} (Clearance: ${docB?.clearanceRequired |
                     </button>
                     {onTriggerEmailDraft && (
                       <button
-                        onClick={() => onTriggerEmailDraft({ subject: emailSubject, body: draftedEmail })}
-                        className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center space-x-1"
+                        onClick={() => onTriggerEmailDraft({ subject: emailSubject, body: draftedEmail, recipientGroup: emailRecipientRole })}
+                        className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center space-x-1 shadow-sm"
                       >
                         <Send className="w-3 h-3" />
                         <span>Send via SMTP</span>

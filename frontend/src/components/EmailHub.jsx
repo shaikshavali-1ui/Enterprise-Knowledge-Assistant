@@ -129,13 +129,48 @@ export default function EmailHub({ emailLogs, onRefreshLogs, activeUser, emailDr
     }
   };
 
-  // Apply draft preset passed from RAG query action trigger
+  // Apply draft preset passed from AI Workspace or RAG query action trigger
   useEffect(() => {
     if (emailDraftPreset) {
-      if (emailDraftPreset.suggestedRecipient) setRecipient(emailDraftPreset.suggestedRecipient);
-      if (emailDraftPreset.suggestedSubject) setSubject(emailDraftPreset.suggestedSubject);
-      if (emailDraftPreset.type) setTemplateType(emailDraftPreset.type);
-      if (emailDraftPreset.templateVariables) setVariables(emailDraftPreset.templateVariables);
+      if (typeof emailDraftPreset === 'string') {
+        setBodyText(emailDraftPreset);
+        setSubject('AI Generated Policy Notice');
+      } else if (typeof emailDraftPreset === 'object') {
+        if (emailDraftPreset.body) {
+          setBodyText(emailDraftPreset.body);
+        } else if (emailDraftPreset.text) {
+          setBodyText(emailDraftPreset.text);
+        }
+
+        if (emailDraftPreset.subject || emailDraftPreset.suggestedSubject) {
+          setSubject(emailDraftPreset.subject || emailDraftPreset.suggestedSubject);
+        }
+
+        if (emailDraftPreset.recipient || emailDraftPreset.suggestedRecipient) {
+          setRecipient(emailDraftPreset.recipient || emailDraftPreset.suggestedRecipient);
+        } else if (emailDraftPreset.recipientGroup) {
+          const group = emailDraftPreset.recipientGroup.toLowerCase();
+          if (group.includes('hr')) {
+            setRecipient('hr.manager@enterprise.com');
+          } else if (group.includes('manager')) {
+            setRecipient('managers@enterprise.com');
+          } else if (group.includes('engineering')) {
+            setRecipient('engineering@enterprise.com');
+          } else {
+            setRecipient('all-staff@enterprise.com');
+          }
+        }
+
+        if (emailDraftPreset.type) {
+          setTemplateType(emailDraftPreset.type);
+        } else {
+          setTemplateType('POLICY_NOTICE');
+        }
+
+        if (emailDraftPreset.templateVariables) {
+          setVariables(emailDraftPreset.templateVariables);
+        }
+      }
     }
   }, [emailDraftPreset]);
 
