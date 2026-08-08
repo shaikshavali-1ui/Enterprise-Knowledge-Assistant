@@ -1,0 +1,4 @@
+fix: Add build script to backend package.json and update vercel.json distDir
+
+- Added dummy build script to backend package.json to prevent Vercel missing script error
+- Configured vercel.json to run root package.json build script mapping to frontend/dist
