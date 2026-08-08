@@ -57,3 +57,5 @@ app.listen(PORT, HOST, () => {
   console.log(`📧 SMTP Email Transport: Ready`);
   console.log(`=======================================================`);
 });
+
+export default app;

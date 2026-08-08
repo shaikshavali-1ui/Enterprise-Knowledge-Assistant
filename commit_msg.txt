@@ -1,0 +1,5 @@
+fix: Update Vercel deployment configuration for monorepo build and backend serverless export
+
+- Updated root package.json scripts with npm --prefix
+- Configured vercel.json with @vercel/node and @vercel/static-build
+- Exported app default in backend/src/server.js
