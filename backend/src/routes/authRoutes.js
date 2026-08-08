@@ -27,18 +27,41 @@ router.post('/send-otp', async (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
 
+  // Strict Membership Guard: Reject unregistered emails
+  const existingUser = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
+  if (!existingUser) {
+    loggerService.logAudit(
+      'SECURITY_ALERT',
+      { email: cleanEmail },
+      `Access Denied: Attempted login by unregistered email '${cleanEmail}'`
+    );
+
+    return res.status(403).json({
+      success: false,
+      message: `Invalid Email: '${cleanEmail}' is not a registered member of this company. Access is restricted to onboarded employees only. Please contact Admin or HR to get provisioned.`
+    });
+  }
+
   try {
     // Generate 6-digit OTP
     const otpCode = otpService.generateOTP(cleanEmail);
 
     // Dispatch OTP email via Nodemailer / Gmail SMTP
-    await emailService.sendOTPEmail({ to: cleanEmail, otpCode });
+    const emailResult = await emailService.sendOTPEmail({ to: cleanEmail, otpCode });
 
     loggerService.logAudit(
       'OTP_DISPATCHED',
       { email: cleanEmail },
       `6-digit verification code sent to ${cleanEmail}.`
     );
+
+    if (emailResult && emailResult.status === 'FAILED') {
+      console.error(`[AuthRoutes] SMTP delivery failed for '${cleanEmail}':`, emailResult.errorMessage);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to deliver email via Gmail SMTP (${emailResult.errorMessage}). Please ensure a valid Gmail App Password is configured in backend/.env.`
+      });
+    }
 
     res.json({
       success: true,
@@ -68,6 +91,21 @@ router.post('/verify-otp', (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
 
+  // Strict Membership Guard: Reject unregistered emails
+  let user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
+  if (!user) {
+    loggerService.logAudit(
+      'SECURITY_ALERT',
+      { email: cleanEmail },
+      `Access Denied: OTP verification attempted for unregistered email '${cleanEmail}'`
+    );
+
+    return res.status(403).json({
+      success: false,
+      message: `Invalid Email: '${cleanEmail}' is not a registered member of this company.`
+    });
+  }
+
   // Verify OTP using OTP service
   const otpResult = otpService.verifyOTP(cleanEmail, otp);
 
@@ -84,34 +122,10 @@ router.post('/verify-otp', (req, res) => {
     });
   }
 
-  // OTP is Valid! Check user in corporate directory
-  let user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
-
-  if (user) {
-    // Activate employee account upon successful OTP verification
-    user.emailVerified = true;
-  } else {
-    // Dynamically register verified employee if domain matches
-    const namePart = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
-    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-    
-    user = {
-      id: `usr_${Date.now()}`,
-      employeeId: `EMP${Math.floor(100 + Math.random() * 900)}`,
-      email: cleanEmail,
-      name: `${formattedName} (Verified Employee)`,
-      fullName: formattedName,
-      role: 'Employee',
-      department: 'General Operations',
-      designation: 'Staff Associate',
-      phone: '+1 (555) 010-0000',
-      securityClearance: 'Level 1',
-      dateOfJoining: new Date().toISOString().split('T')[0],
-      status: 'Active',
-      emailVerified: true,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-    };
-    initialUsers.push(user);
+  // OTP is Valid! Activate employee account upon successful OTP verification
+  user.emailVerified = true;
+  if (user.status === 'Pending OTP Verification') {
+    user.status = 'Active';
   }
 
   // Status Guard Check: Block Suspended & Resigned Accounts
@@ -156,14 +170,10 @@ router.post('/verify-otp', (req, res) => {
   });
 });
 
-// Get list of active & verified enterprise users
+// Get list of active & registered enterprise users
 router.get('/users', (req, res) => {
-  const verifiedUsers = initialUsers.filter(u => u.emailVerified !== false);
-  res.json({ success: true, users: verifiedUsers });
+  res.json({ success: true, users: initialUsers });
 });
-
-// Allowed organization domains for company employees
-const ALLOWED_COMPANY_DOMAINS = ['enterprise.com', 'nexus.com', 'company.com', 'nexus-hub.com'];
 
 // Login & Employee Verification Endpoint
 router.post('/login', (req, res) => {
@@ -171,53 +181,26 @@ router.post('/login', (req, res) => {
 
   let user = null;
 
-  // 1. Search in pre-registered company directory by ID or Email
+  // Search in registered company directory by ID or Email
   if (userId) {
     user = initialUsers.find(u => u.id === userId);
   } else if (email) {
     const cleanEmail = email.trim().toLowerCase();
     user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    
-    // 2. If not pre-seeded, check if email belongs to an authorized company domain
-    if (!user && cleanEmail.includes('@')) {
-      const domain = cleanEmail.split('@')[1];
-      if (ALLOWED_COMPANY_DOMAINS.includes(domain)) {
-        // Dynamically verify & register new company employee
-        const namePart = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
-        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-        
-        user = {
-          id: `usr_${Date.now()}`,
-          employeeId: `EMP${Math.floor(100 + Math.random() * 900)}`,
-          email: cleanEmail,
-          name: `${formattedName} (Verified Employee)`,
-          fullName: formattedName,
-          role: 'Employee',
-          department: 'General Operations',
-          designation: 'Staff Associate',
-          phone: '+1 (555) 010-0000',
-          securityClearance: 'Level 1',
-          dateOfJoining: new Date().toISOString().split('T')[0],
-          status: 'Active',
-          emailVerified: true,
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-        };
-      }
-    }
   }
 
-  // 3. Verification Failed - Deny Access to non-company personnel
+  // Verification Failed - Deny Access to unregistered personnel
   if (!user) {
     const attemptedEmail = email || userId || 'unknown';
     loggerService.logAudit(
       'SECURITY_ALERT', 
       { id: 'unauthorized', name: attemptedEmail, role: 'Unverified External' }, 
-      `Access Denied: Attempted login with non-company credentials (${attemptedEmail})`
+      `Access Denied: Attempted login with non-member credentials (${attemptedEmail})`
     );
 
     return res.status(401).json({
       success: false,
-      message: `Access Denied: '${attemptedEmail}' is not recognized in the Enterprise Knowledge Assistant corporate directory. Only verified organization employees can log in.`
+      message: `Invalid Email: '${attemptedEmail}' is not a registered member of this company. Only authorized members added by Admin/HR can use this website.`
     });
   }
 
@@ -322,9 +305,10 @@ router.post('/users/add', async (req, res) => {
   initialUsers.unshift(newEmployee);
 
   // Trigger 6-digit verification code to employee email
+  let generatedOtp = '123456';
   try {
-    const otpCode = otpService.generateOTP(cleanEmail);
-    await emailService.sendOTPEmail({ to: cleanEmail, otpCode });
+    generatedOtp = otpService.generateOTP(cleanEmail);
+    await emailService.sendOTPEmail({ to: cleanEmail, otpCode: generatedOtp });
   } catch (err) {
     console.warn('[AuthRoutes] Non-fatal: OTP dispatch error during onboarding:', err.message);
   }
@@ -335,13 +319,59 @@ router.post('/users/add', async (req, res) => {
     `Admin/HR created employee '${newEmployee.name}' (${newEmployee.employeeId}) with ${newEmployee.securityClearance} in '${newEmployee.department}'.`
   );
 
-  const verifiedUsers = initialUsers.filter(u => u.emailVerified !== false);
+  res.json({
+    success: true,
+    message: `Employee '${newEmployee.name}' (${newEmployee.employeeId}) provisioned. 6-digit OTP verification code sent to ${cleanEmail}. Verify OTP to activate member account.`,
+    user: newEmployee,
+    otpCode: generatedOtp,
+    users: initialUsers
+  });
+});
+
+// Admin / HR Onboarding OTP Verification Endpoint
+router.post('/users/verify-onboarding-otp', (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email address and 6-digit OTP code are required.'
+    });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  let user = initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: `Employee with email '${cleanEmail}' not found in directory.`
+    });
+  }
+
+  const otpResult = otpService.verifyOTP(cleanEmail, otp);
+  if (!otpResult.valid) {
+    return res.status(400).json({
+      success: false,
+      message: otpResult.message
+    });
+  }
+
+  // Activate employee account
+  user.emailVerified = true;
+  user.status = 'Active';
+
+  loggerService.logAudit(
+    'EMPLOYEE_ONBOARDING_OTP_VERIFIED',
+    user,
+    `Onboarding OTP verified for '${user.name}' (${user.email}). Member account activated.`
+  );
 
   res.json({
     success: true,
-    message: `Employee '${newEmployee.name}' (${newEmployee.employeeId}) provisioned. 6-digit OTP verification email sent to ${cleanEmail}. Account will activate after OTP verification.`,
-    user: newEmployee,
-    users: verifiedUsers
+    message: `✅ Member Account Verified & Activated! Employee '${user.name}' can now log in to the website.`,
+    user,
+    users: initialUsers
   });
 });
 

@@ -19,47 +19,113 @@ export default function App() {
       email: 'admin@enterprise.com',
       name: 'Sarah Connor (System Admin)',
       role: 'Admin',
+      securityClearance: 'Level 6',
       department: 'Executive Management',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_ceo',
+      email: 'ceo@enterprise.com',
+      name: 'Vikram Malhotra (CEO)',
+      role: 'CEO',
+      securityClearance: 'Level 6',
+      department: 'Executive Board',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
     },
     {
       id: 'usr_hr',
       email: 'hr.manager@enterprise.com',
       name: 'Elena Rostova (HR Lead)',
-      role: 'HR Manager',
+      role: 'HR',
+      securityClearance: 'Level 5',
       department: 'Human Resources',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
     },
     {
-      id: 'usr_finance',
-      email: 'finance.lead@enterprise.com',
-      name: 'Marcus Vance (Finance Director)',
-      role: 'Finance',
-      department: 'Finance & Payroll',
+      id: 'usr_director',
+      email: 'director@enterprise.com',
+      name: 'Marcus Vance (Engineering Director)',
+      role: 'Director',
+      securityClearance: 'Level 4',
+      department: 'Engineering',
       avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
     },
     {
-      id: 'usr_employee',
-      email: 'dev.john@enterprise.com',
-      name: 'John Doe (Software Engineer)',
-      role: 'Employee',
-      department: 'Engineering',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+      id: 'usr_manager',
+      email: 'manager@enterprise.com',
+      name: 'Priya Sharma (Operations Manager)',
+      role: 'Manager',
+      securityClearance: 'Level 3',
+      department: 'Operations',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
+    },
+    {
+      id: 'usr_lead',
+      email: 'lead@enterprise.com',
+      name: 'Alex Mercer (Team Lead)',
+      role: 'Team Lead',
+      securityClearance: 'Level 2',
+      department: 'Software Engineering',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80'
     },
     {
       id: 'usr_shavali',
       email: 'shavali@enterprise.com',
-      name: 'Shavali (Software Engineer)',
+      name: 'Shaik Shavali (Software Engineer)',
       role: 'Employee',
+      securityClearance: 'Level 1',
       department: 'Engineering Division',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
     }
   ];
 
   const [currentTab, setCurrentTab] = useState('landing');
+  const initialDefaultDocuments = [
+    {
+      id: 'doc_hr_leave_2026',
+      title: 'Enterprise Annual Leave & Paid Time Off (PTO) Policy 2026',
+      category: 'Leave Policy',
+      minimumAccessRole: 'Employee',
+      accessRole: 'Employee',
+      author: 'Elena Rostova',
+      summary: 'Comprehensive policy detailing paid vacation, sick leave entitlements, parental leave, and approval workflows.',
+      content: 'SECTION 1: ANNUAL LEAVE ENTITLEMENT\nFull-time employees are entitled to 22 working days of paid annual leave per calendar year.'
+    },
+    {
+      id: 'doc_onboarding_guide',
+      title: 'New Hire Employee Onboarding & Workplace Setup Manual',
+      category: 'Onboarding Documents',
+      minimumAccessRole: 'Employee',
+      accessRole: 'Employee',
+      author: 'HR Operations',
+      summary: 'Step-by-step onboarding guide for newly hired personnel, IT equipment issuance, and week-1 orientation checklist.',
+      content: 'SECTION 1: DAY 1 ORIENTATION & WELCOME\n09:00 AM: Check-in at main reception / Join virtual orientation call with HR representative.'
+    },
+    {
+      id: 'doc_it_security_2026',
+      title: 'Corporate IT Security, VPN Guidelines & Access Control Policy',
+      category: 'IT Security',
+      minimumAccessRole: 'Team Lead',
+      accessRole: 'Team Lead',
+      author: 'System Admin',
+      summary: 'Mandatory security protocol for remote VPN access, 2FA hardware keys, and password rotation schedules.',
+      content: 'SECTION 1: VPN & REMOTE ACCESS PROTOCOLS\nAll remote sessions must route through Enterprise WireGuard VPN.'
+    },
+    {
+      id: 'doc_exec_comp_2026',
+      title: 'Q1 Executive Compensation Bands & Bonus Multipliers 2026',
+      category: 'Budget Reports',
+      minimumAccessRole: 'Director',
+      accessRole: 'Director',
+      author: 'Sarah Connor (CTO)',
+      summary: 'Confidential executive salary scale, performance bonus tiers, and stock option vesting schedule.',
+      content: 'CONFIDENTIAL EXECUTIVE DOCUMENT\nLevel 4 Executive Salary Bands and Q1 Performance Multipliers.'
+    }
+  ];
+
   const [users, setUsers] = useState(initialDefaultUsers);
-  const [activeUser, setActiveUser] = useState(initialDefaultUsers[3]);
-  const [documents, setDocuments] = useState([]);
+  const [activeUser, setActiveUser] = useState(initialDefaultUsers[0]);
+  const [documents, setDocuments] = useState(initialDefaultDocuments);
   const [vectorStats, setVectorStats] = useState(null);
   const [emailLogs, setEmailLogs] = useState([]);
   const [conversationLogs, setConversationLogs] = useState([]);
@@ -86,7 +152,11 @@ export default function App() {
 
   const fetchUsers = async (newEmp = null) => {
     if (newEmp) {
-      setUsers(prev => [newEmp, ...prev]);
+      if (Array.isArray(newEmp)) {
+        setUsers(newEmp);
+      } else {
+        setUsers(prev => [newEmp, ...prev.filter(u => u.id !== newEmp.id)]);
+      }
       return;
     }
     try {
@@ -279,6 +349,7 @@ export default function App() {
               onRefreshLogs={fetchEmailLogs}
               activeUser={activeUser}
               emailDraftPreset={emailDraftPreset}
+              users={users}
             />
           )}
 

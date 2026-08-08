@@ -9,12 +9,124 @@ export const initialUsers = [
     department: 'Executive Management',
     designation: 'System Administrator & CTO',
     phone: '+91 9876543210',
-    securityClearance: 'Level 4', // Level 4 = Executive Full Access
+    securityClearance: 'Level 6',
     dateOfJoining: '2025-01-01',
     status: 'Active',
     emailVerified: true,
     createdBy: 'System Root',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_ceo',
+    employeeId: 'EMP002',
+    email: 'ceo@enterprise.com',
+    name: 'Vikram Malhotra (CEO)',
+    fullName: 'Vikram Malhotra',
+    role: 'CEO',
+    department: 'Executive Board',
+    designation: 'Chief Executive Officer',
+    phone: '+1 (555) 019-2834',
+    securityClearance: 'Level 6',
+    dateOfJoining: '2024-06-15',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_hr',
+    employeeId: 'EMP003',
+    email: 'hr.manager@enterprise.com',
+    name: 'Elena Rostova (HR Lead)',
+    fullName: 'Elena Rostova',
+    role: 'HR',
+    department: 'Human Resources',
+    designation: 'VP of People & HR Operations',
+    phone: '+1 (555) 012-3456',
+    securityClearance: 'Level 5',
+    dateOfJoining: '2025-02-10',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_director',
+    employeeId: 'EMP004',
+    email: 'director@enterprise.com',
+    name: 'Marcus Vance (Director)',
+    fullName: 'Marcus Vance',
+    role: 'Director',
+    department: 'Engineering',
+    designation: 'Director of Technology',
+    phone: '+1 (555) 018-4920',
+    securityClearance: 'Level 4',
+    dateOfJoining: '2025-03-01',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_manager',
+    employeeId: 'EMP005',
+    email: 'manager@enterprise.com',
+    name: 'Priya Sharma (Manager)',
+    fullName: 'Priya Sharma',
+    role: 'Manager',
+    department: 'Operations',
+    designation: 'Operations Manager',
+    phone: '+1 (555) 014-8832',
+    securityClearance: 'Level 3',
+    dateOfJoining: '2025-04-12',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_lead',
+    employeeId: 'EMP006',
+    email: 'lead@enterprise.com',
+    name: 'Alex Mercer (Team Lead)',
+    fullName: 'Alex Mercer',
+    role: 'Team Lead',
+    department: 'Software Engineering',
+    designation: 'Staff Tech Lead',
+    phone: '+1 (555) 017-3921',
+    securityClearance: 'Level 2',
+    dateOfJoining: '2025-05-01',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_employee',
+    employeeId: 'EMP007',
+    email: 'dev.john@enterprise.com',
+    name: 'John Doe (Engineer)',
+    fullName: 'John Doe',
+    role: 'Employee',
+    department: 'Engineering Division',
+    designation: 'Software Associate',
+    phone: '+1 (555) 011-2233',
+    securityClearance: 'Level 1',
+    dateOfJoining: '2025-06-01',
+    status: 'Active',
+    emailVerified: true,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'usr_kumar_no_email',
+    employeeId: 'EMP008',
+    email: '',
+    name: 'Kumar (Contract Associate)',
+    fullName: 'Kumar',
+    role: 'Employee',
+    department: 'Operations',
+    designation: 'Contract Associate',
+    phone: '+91 9123456789',
+    securityClearance: 'Level 1',
+    dateOfJoining: '2025-07-01',
+    status: 'Active',
+    emailVerified: false,
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
   }
 ];
 
@@ -23,10 +135,11 @@ export const initialDocuments = [
     id: 'doc_hr_leave_2026',
     title: 'Enterprise Annual Leave & Paid Time Off (PTO) Policy 2026',
     category: 'HR Policy',
-    accessRole: 'Public',
-    clearanceRequired: 'Level 1', // Public Level 1
+    minimumAccessRole: 'Employee',
+    accessRole: 'Employee',
+    clearanceRequired: 'Level 1',
     department: 'All Departments',
-    author: 'Elena Rostova',
+    author: 'Elena Rostova (HR Lead)',
     updatedAt: '2026-01-15',
     summary: 'Comprehensive policy detailing paid vacation, sick leave entitlements, parental leave, and approval workflows.',
     content: `SECTION 1: ANNUAL LEAVE ENTITLEMENT
@@ -46,10 +159,11 @@ Maternity leave is granted up to 16 fully paid weeks. Paternity / Secondary Care
   {
     id: 'doc_onboarding_guide',
     title: 'New Hire Employee Onboarding & Workplace Setup Manual',
-    category: 'Onboarding',
-    accessRole: 'Public',
+    category: 'Operations',
+    minimumAccessRole: 'Employee',
+    accessRole: 'Employee',
     clearanceRequired: 'Level 1',
-    department: 'All Departments',
+    department: 'Operations & HR',
     author: 'HR Operations',
     updatedAt: '2026-02-01',
     summary: 'Step-by-step onboarding guide for newly hired personnel, IT equipment issuance, and week-1 orientation checklist.',
@@ -70,10 +184,11 @@ All employees are provided a hardware stipend of $500 for ergonomic office equip
   },
   {
     id: 'doc_it_security_2026',
-    title: 'Global Cybersecurity & Information Protection Guidelines',
+    title: 'Global Cybersecurity, VPN Guidelines & Access Control Policy',
     category: 'IT Security',
-    accessRole: 'Public',
-    clearanceRequired: 'Level 2', // Level 2 Department Security
+    minimumAccessRole: 'Team Lead',
+    accessRole: 'Team Lead',
+    clearanceRequired: 'Level 2',
     department: 'IT Security & Engineering',
     author: 'Chief Information Security Officer',
     updatedAt: '2026-03-10',
@@ -89,15 +204,16 @@ Any suspicious incoming emails or potential security breaches must be immediatel
   },
   {
     id: 'doc_exec_comp_confidential',
-    title: 'Q1 2026 Executive Compensation & Performance Incentive Structure',
-    category: 'Executive Finance',
-    accessRole: 'Executive-Only',
-    clearanceRequired: 'Level 4', // Confidential Level 4 Executive Only
-    department: 'Executive Management',
+    title: 'Q1 2026 Executive Compensation & Performance Financial Reports',
+    category: 'Finance & Reports',
+    minimumAccessRole: 'Director',
+    accessRole: 'Director',
+    clearanceRequired: 'Level 4',
+    department: 'Finance & Executive Management',
     author: 'Board of Directors & Compensation Committee',
     updatedAt: '2026-04-05',
     summary: 'CONFIDENTIAL: Salary benchmark bands, executive bonus multipliers, stock option vesting schedules for senior leadership.',
-    content: `[CONFIDENTIAL - RESTRICTED ACCESS LEVEL 4 EXECUTIVE ONLY]
+    content: `[CONFIDENTIAL - RESTRICTED ACCESS LEVEL 4 EXECUTIVE / DIRECTOR ONLY]
 
 SECTION 1: EXECUTIVE SALARY BANDS (LEVEL L7 - L9)
 - L7 (Director): Base Range $210,000 - $275,000 | Target Bonus: 30% | Equity Grant: 15,000 RSUs (4-year vesting, 1-year cliff).
@@ -109,15 +225,18 @@ Bonus payouts are tied to 60% corporate ARR growth and 40% department KPI milest
   },
   {
     id: 'doc_hr_disciplinary_confidential',
-    title: 'Internal Workplace Conduct & Investigation Standard Operating Procedure',
-    category: 'HR Confidential',
-    accessRole: 'HR-Only',
-    clearanceRequired: 'Level 3', // Confidential Level 3 Management
+    title: 'Workplace Conduct & Grievance HR Policy Document',
+    category: 'Company Documents',
+    minimumAccessRole: 'HR',
+    accessRole: 'HR',
+    clearanceRequired: 'Level 5',
     department: 'Human Resources',
-    author: 'Elena Rostova',
+    author: 'Elena Rostova (HR Lead)',
     updatedAt: '2026-05-12',
     summary: 'CONFIDENTIAL: Procedures for handling employee grievances, formal warnings, performance improvement plans (PIP), and severance protocols.',
-    content: `[CONFIDENTIAL - HR INTERNAL USE ONLY LEVEL 3]
+    content: `[CONFIDENTIAL - HR INTERNAL USE ONLY LEVEL 5]
+1. All employee grievance files are encrypted with RSA-4096 keys.
+2. Mandatory HR escalation process required before formal action.
 
 SECTION 1: GRIEVANCE HANDLING & INVESTIGATION PROTOCOL
 All employee complaints regarding discrimination, harassment, or policy violations must be logged in the HR Secure Vault within 24 hours of receipt. An impartial investigator from HR Legal must be assigned within 48 hours.

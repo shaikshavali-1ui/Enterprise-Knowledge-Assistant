@@ -6,6 +6,7 @@ import documentRoutes from './routes/documentRoutes.js';
 import ragRoutes from './routes/ragRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
 import logRoutes from './routes/logRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/rag', ragRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/leave', leaveRoutes);
 
 // Start Express Server
 const HOST = '0.0.0.0';

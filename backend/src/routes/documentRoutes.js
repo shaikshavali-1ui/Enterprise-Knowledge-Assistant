@@ -13,13 +13,16 @@ router.get('/', (req, res) => {
 
 // Upload / Add new document to vector index
 router.post('/upload', (req, res) => {
-  const { title, category, accessRole, content, author, requesterRole } = req.body;
+  const { title, category, minimumAccessRole, accessRole, content, author, requesterRole } = req.body;
 
-  if (requesterRole === 'Employee' || (requesterRole && requesterRole !== 'Admin' && requesterRole !== 'HR Manager')) {
-    loggerService.logAudit('SECURITY_ALERT', { name: author || 'User', role: requesterRole }, `Access Denied: Attempted document ingestion without Admin/HR clearance.`);
+  const minAccessRole = minimumAccessRole || accessRole || 'Employee';
+
+  // RBAC Capability Matrix Enforcement: Upload Documents requires Team Lead, Manager, Director, HR, or CEO/Admin
+  if (requesterRole === 'Employee') {
+    loggerService.logAudit('SECURITY_ALERT', { name: author || 'User', role: requesterRole }, `Access Denied: Attempted document ingestion with Employee rank.`);
     return res.status(403).json({
       success: false,
-      message: 'Access Denied: Only Admin and HR Lead personnel are authorized to ingest documents into the vector database.'
+      message: 'Access Denied: Only Team Lead, Manager, Director, HR, or CEO/Admin personnel are authorized to ingest documents.'
     });
   }
 
@@ -30,16 +33,17 @@ router.post('/upload', (req, res) => {
   const newDoc = vectorStore.addDocument({
     title,
     category: category || 'General Policy',
-    accessRole: accessRole || 'Public',
+    minimumAccessRole: minAccessRole,
+    accessRole: minAccessRole,
     author: author || 'Admin User',
     content
   });
 
-  loggerService.logAudit('DOCUMENT_INGESTED', { name: author || 'Admin', role: accessRole }, `Ingested document "${title}" into vector store.`);
+  loggerService.logAudit('DOCUMENT_INGESTED', { name: author || 'Admin', role: minAccessRole }, `Ingested document "${title}" with Minimum Access Role [${minAccessRole}].`);
 
   res.status(201).json({
     success: true,
-    message: 'Document successfully ingested and indexed into vector database.',
+    message: `Document successfully ingested with Minimum Access Role [${minAccessRole}] and indexed into vector store.`,
     document: newDoc,
     stats: vectorStore.getStats()
   });

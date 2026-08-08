@@ -4,14 +4,15 @@ import {
   MessageSquare, 
   FileText, 
   Mail, 
-  ShieldAlert, 
+  ShieldAlert,
+  Users, 
   Clock,
   Sparkles,
   Home
 } from 'lucide-react';
 
 export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
-  const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin';
+  const isHrOrAdmin = activeUser?.role === 'HR Manager' || activeUser?.role === 'Admin' || activeUser?.role === 'HR';
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
@@ -19,7 +20,7 @@ export default function Sidebar({ currentTab, setCurrentTab, activeUser }) {
     { id: 'chat', label: 'Knowledge Chat (RAG)', icon: MessageSquare, badge: 'AI' },
     { id: 'documents', label: 'Document Base', icon: FileText, badge: 'Vector' },
     { id: 'email', label: 'Email Automation', icon: Mail, badge: 'SMTP' },
-    { id: 'rbac', label: 'RBAC Simulator', icon: ShieldAlert, badge: activeUser?.role },
+    { id: 'rbac', label: 'Employee Directory', icon: Users, badge: 'Staff' },
     { id: 'logs', label: 'Audit & Logs', icon: Clock, badge: isHrOrAdmin ? 'Admin & HR' : '🔒 Restricted' },
   ];
 

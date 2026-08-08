@@ -188,6 +188,124 @@ class EmailService {
   }
 
   /**
+   * Send Leave Approval Required Email to HR / Approver
+   */
+  async sendLeaveApprovalRequiredEmail({ leaveRequest, hrEmail }) {
+    const subject = `🚨 Leave Approval Required: ${leaveRequest.leaveType} - ${leaveRequest.employeeName}`;
+    const to = hrEmail || config.smtp.user || config.smtp.fromEmail || 'hr@enterprise.corp';
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 580px; margin: 0 auto; background-color: #0b1120; border: 1px solid #1e293b; border-radius: 20px; overflow: hidden; padding: 24px; color: #f8fafc;">
+        
+        <!-- Header Title Banner -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px; pb: 14px; border-bottom: 1px solid #1e293b;">
+          <tr>
+            <td style="text-align: left; padding-bottom: 14px;">
+              <span style="font-size: 18px; font-weight: bold; color: #ffffff;">${leaveRequest.employeeName}</span>
+              <span style="font-size: 14px; font-family: monospace; color: #818cf8; margin-left: 6px;">(${leaveRequest.employeeId || 'EMP001'})</span>
+            </td>
+            <td style="text-align: right; padding-bottom: 14px;">
+              <span style="display: inline-block; background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; font-family: monospace;">Pending HR Review</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Inner Content Details Card -->
+        <div style="background-color: #030712; border: 1px solid #1e293b; border-radius: 14px; padding: 18px; margin-bottom: 20px; font-family: monospace; font-size: 13px; line-height: 1.8;">
+          <table style="width: 100%; border-collapse: collapse; color: #cbd5e1;">
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; width: 45%;">Leave Type: <strong style="color: #f8fafc;">${leaveRequest.leaveType}</strong></td>
+              <td style="padding: 6px 0; color: #64748b; text-align: right;">Duration: <strong style="color: #f8fafc;">${leaveRequest.startDate} to ${leaveRequest.endDate}</strong></td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding: 8px 0 6px 0; color: #64748b;">
+                Reason: <span style="color: #f8fafc; font-weight: bold;">${leaveRequest.reason || 'Personal Leave'}</span>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding: 6px 0; color: #64748b;">
+                Email: <span style="color: #818cf8; font-weight: bold;">${leaveRequest.employeeEmail}</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Approve / Reject Action Buttons -->
+        <div style="margin-top: 20px; text-align: center;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="width: 48%; text-align: center;">
+                <a href="http://localhost:3000/?leaveAction=approve&id=${leaveRequest.id}" style="display: block; background-color: #059669; color: #ffffff; text-decoration: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">✓ Approve Request</a>
+              </td>
+              <td style="width: 4%;"></td>
+              <td style="width: 48%; text-align: center;">
+                <a href="http://localhost:3000/?leaveAction=reject&id=${leaveRequest.id}" style="display: block; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);">✕ Reject Request</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top: 24px; padding-top: 14px; border-top: 1px solid #1e293b; font-size: 11px; color: #64748b; text-align: center; font-family: monospace;">
+          Enterprise Leave Automation • Security Clearance RBAC Engine Active
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject,
+      type: 'LEAVE_APPROVAL',
+      body: `Leave Approval Required for ${leaveRequest.employeeName} (${leaveRequest.leaveType}: ${leaveRequest.startDate} to ${leaveRequest.endDate}).`,
+      senderName: 'Enterprise HR Portal'
+    });
+  }
+
+  /**
+   * Send Final Decision Email (Approved / Rejected) to Employee
+   */
+  async sendLeaveFinalDecisionEmail({ leaveRequest }) {
+    const isApproved = leaveRequest.status === 'Approved';
+    const subject = isApproved 
+      ? `✅ Leave Request Approved: ${leaveRequest.leaveType}`
+      : `❌ Leave Request Rejected: ${leaveRequest.leaveType}`;
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+        <div style="background: ${isApproved ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'}; padding: 24px; text-align: center;">
+          <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: bold;">Leave Request ${leaveRequest.status}</h2>
+          <p style="color: #ffffff; opacity: 0.9; margin: 6px 0 0 0; font-size: 13px;">Enterprise HR Status Notification</p>
+        </div>
+        <div style="padding: 28px; color: #374151; font-size: 15px; line-height: 1.6;">
+          <p style="margin-top: 0;">Dear <strong>${leaveRequest.employeeName}</strong>,</p>
+          <p>Your leave request has been <strong>${leaveRequest.status.toLowerCase()}</strong> by HR Management.</p>
+          
+          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin: 20px 0;">
+            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+              <tr><td style="padding: 6px 0; color: #6b7280; font-weight: bold; width: 130px;">Leave Type:</td><td style="color: #111827; font-weight: bold;">${leaveRequest.leaveType}</td></tr>
+              <tr><td style="padding: 6px 0; color: #6b7280; font-weight: bold;">Duration:</td><td style="color: #111827;">${leaveRequest.startDate} to ${leaveRequest.endDate}</td></tr>
+              <tr><td style="padding: 6px 0; color: #6b7280; font-weight: bold;">Reviewed By:</td><td style="color: #111827; font-weight: bold;">${leaveRequest.reviewedBy || 'HR Manager'}</td></tr>
+              ${leaveRequest.rejectionReason ? `<tr><td style="padding: 6px 0; color: #dc2626; font-weight: bold;">Reason:</td><td style="color: #dc2626; font-weight: bold;">${leaveRequest.rejectionReason}</td></tr>` : ''}
+            </table>
+          </div>
+
+          <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center;">
+            Enterprise HR Operations • Enterprise Knowledge Assistant
+          </div>
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail({
+      to: leaveRequest.employeeEmail,
+      subject,
+      type: 'LEAVE_DECISION',
+      body: `Dear ${leaveRequest.employeeName}, your leave request for ${leaveRequest.leaveType} (${leaveRequest.startDate} to ${leaveRequest.endDate}) has been ${leaveRequest.status.toLowerCase()} by ${leaveRequest.reviewedBy || 'HR Manager'}.`,
+      senderName: 'Enterprise HR Portal'
+    });
+  }
+
+  /**
    * Get email logs
    */
   getLogs() {

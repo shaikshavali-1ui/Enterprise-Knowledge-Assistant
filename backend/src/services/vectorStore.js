@@ -96,45 +96,38 @@ class VectorStoreService {
     return dot / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
+  ROLE_RANK_MAP = {
+    'Employee': 1,
+    'Team Lead': 2,
+    'Manager': 3,
+    'Director': 4,
+    'HR': 5,
+    'HR Manager': 5,
+    'CEO': 6,
+    'Admin': 6
+  };
+
   /**
-  /**
-   * Role & Security Clearance access permission check
-   * Level 1 = Public, Level 2 = Department, Level 3 = Management, Level 4 = Executive
+   * Minimum Access Role Evaluation Logic:
+   * User Role Rank MUST be >= Document Minimum Role Rank
+   * Hierarchy: Employee (1) < Team Lead (2) < Manager (3) < Director (4) < HR (5) < CEO / Admin (6)
    */
+  canUserAccessDocument(userRole = 'Employee', document = {}) {
+    if (!userRole || userRole === 'Admin' || userRole === 'CEO') return true;
+
+    const minRole = document.minimumAccessRole || document.accessRole || 'Employee';
+
+    const userRank = this.ROLE_RANK_MAP[userRole] || 
+      (userRole.includes('HR') ? 5 : userRole.includes('Director') ? 4 : userRole.includes('Manager') ? 3 : userRole.includes('Lead') ? 2 : 1);
+
+    const minRank = this.ROLE_RANK_MAP[minRole] || 
+      (minRole === 'Public' ? 1 : minRole === 'HR-Only' ? 5 : minRole === 'Executive-Only' ? 6 : 1);
+
+    return userRank >= minRank;
+  }
+
   isRoleAuthorized(userRole, document, securityClearance = 'Level 1') {
-    if (userRole === 'Admin' || securityClearance === 'Level 4') return true;
-
-    const clearanceLevelMap = {
-      'Level 1': 1,
-      'Level 2': 2,
-      'Level 3': 3,
-      'Level 4': 4
-    };
-
-    const userLevel = clearanceLevelMap[securityClearance] || 1;
-    const docLevel = clearanceLevelMap[document.clearanceRequired || 'Level 1'] || 1;
-
-    // Strict Enforcement: User security clearance level MUST be >= document required clearance level
-    if (userLevel < docLevel) {
-      return false;
-    }
-
-    const docAccessRole = document.accessRole || 'Public';
-    if (docAccessRole === 'Public') return true;
-
-    if (userRole === 'HR Manager') {
-      return docAccessRole === 'Public' || docAccessRole === 'HR-Only' || docAccessRole === 'Executive-Only';
-    }
-
-    if (userRole === 'Finance') {
-      return docAccessRole === 'Public' || docAccessRole === 'Executive-Only';
-    }
-
-    if (userRole === 'Employee') {
-      return docAccessRole === 'Public';
-    }
-
-    return false;
+    return this.canUserAccessDocument(userRole, document);
   }
 
   /**

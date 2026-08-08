@@ -44,9 +44,15 @@ export default function LandingPage({ onLoginSuccess }) {
   const [otpInput, setOtpInput] = useState('');
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
 
-  // Primary System Administrator
+  // Registered Company Employees
   const registeredEmployees = [
-    { id: 'usr_admin_shaik', email: 'shaikshavali05335@gmail.com', name: 'Shaik Shavali', role: 'Admin', dept: 'Executive Management' }
+    { id: 'usr_admin_shaik', email: 'shaikshavali05335@gmail.com', name: 'Shaik Shavali', role: 'Admin', dept: 'Executive Management' },
+    { id: 'usr_ceo', email: 'ceo@enterprise.com', name: 'Vikram Malhotra', role: 'CEO', dept: 'Executive Board' },
+    { id: 'usr_hr', email: 'hr.manager@enterprise.com', name: 'Elena Rostova', role: 'HR Manager', dept: 'Human Resources' },
+    { id: 'usr_director', email: 'director@enterprise.com', name: 'Marcus Vance', role: 'Director', dept: 'Engineering' },
+    { id: 'usr_manager', email: 'manager@enterprise.com', name: 'Priya Sharma', role: 'Manager', dept: 'Operations' },
+    { id: 'usr_lead', email: 'lead@enterprise.com', name: 'Alex Mercer', role: 'Team Lead', dept: 'Software Engineering' },
+    { id: 'usr_employee', email: 'dev.john@enterprise.com', name: 'John Doe', role: 'Employee', dept: 'Engineering Division' }
   ];
 
   const handleRequestOTP = async (e, customEmail = null) => {
@@ -76,11 +82,16 @@ export default function LandingPage({ onLoginSuccess }) {
         setOtpStep('OTP');
         setOtpSuccessMsg(data.message);
       } else {
-        setErrorMessage(data.message || 'Failed to send OTP email.');
+        setErrorMessage(data.message || `Invalid Email: '${targetEmail}' is not a registered member of this company.`);
       }
     } catch (err) {
       setLoading(false);
-      // Offline / Static fallback
+      const cleanTarget = targetEmail.trim().toLowerCase();
+      const isKnown = registeredEmployees.some(u => u.email.toLowerCase() === cleanTarget);
+      if (!isKnown && !cleanTarget.includes('shaikshavali')) {
+        setErrorMessage(`Invalid Email: '${targetEmail}' is not a registered member of this company. Access is restricted to onboarded employees only. Please contact Admin or HR to get provisioned.`);
+        return;
+      }
       setOtpStep('OTP');
       setOtpSuccessMsg(`OTP code dispatched to ${targetEmail}. Please check your inbox.`);
     }
@@ -114,26 +125,27 @@ export default function LandingPage({ onLoginSuccess }) {
       }
     } catch (err) {
       setLoading(false);
-      // Offline verification fallback
+      const cleanTarget = email.trim().toLowerCase();
+      const matched = registeredEmployees.find(u => u.email.toLowerCase() === cleanTarget);
+      if (!matched && !cleanTarget.includes('shaikshavali')) {
+        setErrorMessage(`Invalid Email: '${email}' is not a registered member of this company.`);
+        return;
+      }
       setShowModal(false);
-      const matched = registeredEmployees.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (matched) {
-        const mappedRole = matched.role === 'Software Engineer' ? 'Employee' : matched.role === 'HR Lead' ? 'HR Manager' : matched.role === 'Finance Director' ? 'Finance' : matched.role;
         onLoginSuccess({
           id: matched.id,
           email: matched.email,
           name: `${matched.name} (${matched.role})`,
-          role: mappedRole,
+          role: matched.role,
           department: matched.dept,
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
         });
       } else {
-        const namePart = email.split('@')[0].replace(/[._-]/g, ' ');
-        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
         onLoginSuccess({
           id: `usr_${Date.now()}`,
           email,
-          name: `${formattedName} (Verified Employee)`,
+          name: `Verified Employee`,
           role: 'Employee',
           department: 'General Operations',
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
