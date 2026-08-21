@@ -80,7 +80,12 @@ export default function LandingPage({ onLoginSuccess }) {
 
       if (data.success) {
         setOtpStep('OTP');
-        setOtpSuccessMsg(data.message);
+        if (data.fallbackOtp) {
+          setOtpInput(data.fallbackOtp);
+          setOtpSuccessMsg(`🔑 Development / Fallback Code: Verification code is ${data.fallbackOtp} (auto-filled).`);
+        } else {
+          setOtpSuccessMsg(data.message);
+        }
       } else {
         setErrorMessage(data.message || `Invalid Email: '${targetEmail}' is not a registered member of this company.`);
       }

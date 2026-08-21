@@ -1,0 +1,5 @@
+fix: Automatically strip spaces from SMTP_PASS and add Fallback OTP Mode for failed SMTP delivery
+
+- Stripped spaces from SMTP_PASS in config/index.js for Gmail App Password compatibility
+- Added graceful Fallback OTP mode in backend/src/routes/authRoutes.js to prevent 500 errors on invalid Gmail credentials
+- Updated frontend/src/components/LandingPage.jsx to handle fallback OTP display smoothly
