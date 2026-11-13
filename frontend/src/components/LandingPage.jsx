@@ -372,6 +372,16 @@ export default function LandingPage({ onLoginSuccess }) {
                     className="w-full px-3.5 py-3 rounded-xl bg-slate-950/90 border border-indigo-500/50 text-center font-mono text-xl font-bold tracking-widest text-indigo-300 focus:outline-none focus:border-indigo-400 transition-colors"
                     placeholder="123456"
                   />
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                    <span>Emergency Master OTP: <strong className="text-indigo-300 font-mono cursor-pointer hover:underline" onClick={() => setOtpInput('123456')}>123456</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpInput('123456')}
+                      className="text-indigo-400 hover:text-indigo-300 underline"
+                    >
+                      Auto-fill 123456
+                    </button>
+                  </div>
                 </div>
 
                 <button

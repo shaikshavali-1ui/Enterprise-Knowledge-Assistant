@@ -9,11 +9,23 @@ class EmailService {
   }
 
   /**
+   * Check if real production SMTP credentials have been configured
+   */
+  isRealSmtpConfigured() {
+    return Boolean(
+      config.smtp.user && 
+      config.smtp.pass && 
+      !config.smtp.user.includes('your_gmail') && 
+      !config.smtp.pass.includes('your_16')
+    );
+  }
+
+  /**
    * Initialize Nodemailer SMTP Transporter
    */
   async initTransporter() {
     try {
-      if (config.smtp.user && config.smtp.pass) {
+      if (this.isRealSmtpConfigured()) {
         this.transporter = nodemailer.createTransport({
           host: config.smtp.host,
           port: config.smtp.port,
@@ -24,25 +36,16 @@ class EmailService {
           },
           tls: {
             rejectUnauthorized: false
-          }
+          },
+          connectionTimeout: 8000,
+          greetingTimeout: 8000,
+          socketTimeout: 8000
         });
         console.log('[EmailService] SMTP Transporter initialized with user credentials.');
       } else {
         // Fallback test transport using Ethereal sandbox
-        const testAccount = await nodemailer.createTestAccount();
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass
-          },
-          tls: {
-            rejectUnauthorized: false
-          }
-        });
-        console.log(`[EmailService] SMTP Test Account created (${testAccount.user}). Ready for dispatch.`);
+        this.transporter = null;
+        console.log('[EmailService] Real SMTP credentials not detected. Active in Fallback / Instant Verification mode.');
       }
     } catch (err) {
       console.warn('[EmailService] SMTP Transporter initialization fallback to internal simulator:', err.message);
